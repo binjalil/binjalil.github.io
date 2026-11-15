@@ -203,6 +203,7 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
 .deptsel{display:inline-flex;align-items:center;gap:6px;margin-inline-start:auto;background:rgba(255,255,255,.14);color:inherit;border-radius:999px;padding:6px 12px;font-size:.85rem;font-weight:600;white-space:nowrap;max-width:46vw}
 .deptsel svg{width:16px;height:16px;flex:none}.deptsel select{appearance:none;-webkit-appearance:none;background:transparent;border:0;color:inherit;font:inherit;padding:0;max-width:36vw;text-overflow:ellipsis}
 .deptsel select option{color:#111}
+.spin{width:34px;height:34px;margin:30px auto;border:3px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:sp 1s linear infinite}@keyframes sp{to{transform:rotate(360deg)}}
 </style></head><body><div id="app"></div><div id="sheet"></div><div id="toast" class="toast" hidden role="status" aria-live="polite"></div>
 <script>// Languages: code, native name, direction
 const LANGS=[['ar','العربية','rtl'],['en','English','ltr'],['ur','اردو','rtl'],['hi','हिन्दी','ltr'],['bn','বাংলা','ltr']];
@@ -638,12 +639,161 @@ new_dept|قسم جديد|New department|نیا شعبہ|नया विभा�
 dept_access|القسم المسموح له|Department access|رسائی والا شعبہ|विभाग पहुंच|বিভাগ অ্যাক্সেস
 dept_access_hint|يشوف بيانات هذا القسم بس. «كل الأقسام» صلاحية يعطيها المدير.|Sees only this department's data. "All departments" is granted by the manager.|صرف اسی شعبے کا ڈیٹا دیکھے گا۔|केवल इसी विभाग का डेटा देखेगा।|শুধু এই বিভাগের ডেটা দেখবে।
 dept_not_empty|ما تقدر تحذف القسم وفيه بيانات أو موظفين، انقلهم أول|Can't delete a department that still has data or staff|ڈیٹا یا عملے والا شعبہ حذف نہیں ہو سکتا|डेटा या स्टाफ वाला विभाग नहीं हटा सकते|ডেটা বা কর্মী থাকা বিভাগ মুছা যাবে না
+loading|جاري التحميل…|Loading…|لوڈ ہو رہا ہے…|लोड हो रहा है…|লোড হচ্ছে…
+offline|لا يوجد اتصال بالإنترنت|No internet connection|انٹرنیٹ کنکشن نہیں|इंटरनेट कनेक्शन नहीं|ইন্টারনেট সংযোগ নেই
+server_err|تعذّر الاتصال بالسيرفر، حاول مرة ثانية|Couldn't reach the server, try again|سرور سے رابطہ نہیں ہو سکا|सर्वर से संपर्क नहीं हो सका|সার্ভারে সংযোগ করা যায়নি
+acc_not_linked|هذا الحساب غير مربوط، اطلب من المدير رمز تفعيل جديد|This account isn't linked; ask the manager for a new activation code|یہ اکاؤنٹ منسلک نہیں، مینیجر سے نیا کوڈ لیں|यह खाता जुड़ा नहीं, मैनेजर से नया कोड लें|এই অ্যাকাউন্ট যুক্ত নয়, ম্যানেজারের কাছে নতুন কোড নিন
+locked_code|محاولات كثيرة، اطلب من المدير رمز تفعيل جديد|Too many attempts; ask the manager for a new code|بہت زیادہ کوششیں، مینیجر سے نیا کوڈ لیں|बहुत प्रयास, मैनेजर से नया कोड लें|অনেক চেষ্টা, ম্যানেজারের কাছে নতুন কোড নিন
+act_used|هذا الرمز مستخدم، اطلب من المدير إعادة التعيين|This code was already used; ask the manager to reset|یہ کوڈ استعمال ہو چکا، مینیجر سے ری سیٹ کروائیں|यह कोड उपयोग हो चुका, मैनेजर से रीसेट कराएं|এই কোড ব্যবহৃত, ম্যানেজারকে রিসেট করতে বলুন
+uploading|جاري رفع بياناتك للسيرفر…|Uploading your data to the server…|آپ کا ڈیٹا سرور پر جا رہا ہے…|आपका डेटा सर्वर पर भेजा जा रहा है…|আপনার ডেটা সার্ভারে যাচ্ছে…
+cloud_done|تم الربط بالسيرفر، بياناتك صارت مشتركة|Connected — your data is now shared|سرور سے منسلک ہو گیا|सर्वर से जुड़ गया|সার্ভারে যুক্ত হয়েছে
+cloud_setup_note|أول تشغيل على السيرفر: بيانات التطبيق اللي في جوالك بتنرفع كلها، وبعدها يقدر الموظفين والسائقين يدخلون من جوالاتهم.|First run on the server: the data on this phone will be uploaded, then staff and drivers can sign in from their own phones.|پہلی بار: اس فون کا ڈیٹا سرور پر جائے گا، پھر عملہ اپنے فون سے داخل ہو سکے گا۔|पहली बार: इस फोन का डेटा सर्वर पर जाएगा, फिर कर्मचारी अपने फोन से लॉगिन कर सकेंगे।|প্রথমবার: এই ফোনের ডেটা সার্ভারে যাবে, তারপর কর্মীরা নিজের ফোন থেকে ঢুকতে পারবে।
+cloud|السيرفر والمزامنة|Server & sync|سرور اور ہم آہنگی|सर्वर और सिंक|সার্ভার ও সিঙ্ক
+last_sync|آخر مزامنة|Last sync|آخری ہم آہنگی|अंतिम सिंक|শেষ সিঙ্ক
+sync_now|مزامنة الآن|Sync now|ابھی ہم آہنگ کریں|अभी सिंक करें|এখন সিঙ্ক
+synced_pending|{n} بانتظار الرفع|{n} waiting to upload|{n} اپلوڈ کے منتظر|{n} अपलोड बाकी|{n} আপলোডের অপেক্ষায়
 `;
 const T={};
 for(const line of DICT.trim().split('\n')){const p=line.split('|');T[p[0]]=p.slice(1)}
 const LIDX={ar:0,en:1,ur:2,hi:3,bn:4};
 let LANG='ar';
 function t(k,v){const r=T[k];let s=r?(r[LIDX[LANG]]||r[1]||r[0]):k;if(v)for(const x in v)s=s.split('{'+x+'}').join(v[x]);return s}
+
+/* ---------- cloud sync (Supabase over plain REST, no library) ---------- */
+const SB_URL='https://nonpsctgviqhnvarkquu.supabase.co',SB_KEY='sb_publishable_sDpPkr_B0MGJ5He0AblgmQ_VHttmBxT';
+const SB_SES='naql-sb',SB_SYNC='naql-synced',SB_PHQ='naql-phq';
+const COLLS=['users','drivers','trucks','clients','routes','trips','fixed','driverTx','tyres','depts'];
+const CL={on:true,ses:null,ready:false,loading:false,last:null,lastTs:null,synced:{},pending:{},profiles:{},dirty:false,offline:false,timer:null,busy:false,phq:[]};
+const email=(id,gen)=>`${id}.${gen||1}@binjalil.app`;
+function h32(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return (h>>>0).toString(36)+s.length.toString(36)}
+function clStore(){try{localStorage.setItem(SB_SES,JSON.stringify(CL.ses));localStorage.setItem(SB_SYNC,JSON.stringify({s:CL.synced,ts:CL.lastTs}));localStorage.setItem(SB_PHQ,JSON.stringify(CL.phq))}catch(e){}}
+function clRestore(){try{CL.ses=JSON.parse(localStorage.getItem(SB_SES)||'null');const y=JSON.parse(localStorage.getItem(SB_SYNC)||'null');if(y){CL.synced=y.s||{};CL.lastTs=y.ts||null}CL.phq=JSON.parse(localStorage.getItem(SB_PHQ)||'[]')}catch(e){}}
+
+async function sbFetch(path,o={}){const h=Object.assign({apikey:SB_KEY,'Content-Type':'application/json'},o.headers||{});
+  if(o.auth!==false){const tk=await sbToken();h.Authorization='Bearer '+(tk||SB_KEY)}
+  let r;try{r=await fetch(SB_URL+path,{method:o.method||'GET',headers:h,body:o.body===undefined?undefined:(typeof o.body==='string'||o.body instanceof Blob?o.body:JSON.stringify(o.body))})}
+  catch(e){CL.offline=true;throw Object.assign(new Error('offline'),{offline:true})}
+  CL.offline=false;
+  if(!r.ok){let j=null;try{j=await r.json()}catch(e){}const err=new Error((j&&(j.msg||j.message||j.error_description||j.error))||('http '+r.status));err.status=r.status;err.code=j&&j.code;throw err}
+  if(o.raw)return r;const tx=await r.text();return tx?JSON.parse(tx):null}
+function setSes(j){CL.ses={access_token:j.access_token,refresh_token:j.refresh_token,exp:Date.now()+((j.expires_in||3600)-60)*1000,uid:j.user&&j.user.id};clStore()}
+let refreshing=null;
+async function sbToken(){if(!CL.ses)return null;if(Date.now()<CL.ses.exp)return CL.ses.access_token;
+  if(!refreshing)refreshing=(async()=>{try{const j=await sbFetch('/auth/v1/token?grant_type=refresh_token',{method:'POST',auth:false,body:{refresh_token:CL.ses.refresh_token}});setSes(j)}catch(e){if(!e.offline){CL.ses=null;clStore()}}finally{refreshing=null}})();
+  await refreshing;return CL.ses&&CL.ses.access_token}
+const rpc=(fn,args)=>sbFetch('/rest/v1/rpc/'+fn,{method:'POST',body:args||{}});
+async function sbSignIn(em,pw){const j=await sbFetch('/auth/v1/token?grant_type=password',{method:'POST',auth:false,body:{email:em,password:pw}});setSes(j)}
+async function sbSignUp(em,pw){const j=await sbFetch('/auth/v1/signup',{method:'POST',auth:false,body:{email:em,password:pw}});
+  if(!j||!j.access_token){if(j&&j.id||j&&j.user)return sbSignIn(em,pw);throw new Error('no_session')}setSes(j)}
+function sbSignOut(){const s=CL.ses;CL.ses=null;CL.synced={};CL.lastTs=null;CL.pending={};CL.ready=false;clStore();if(s)fetch(SB_URL+'/auth/v1/logout',{method:'POST',headers:{apikey:SB_KEY,Authorization:'Bearer '+s.access_token}}).catch(()=>{})}
+
+/* ---- map the app state to rows ---- */
+const SECRET=['pwHash','pwSalt','actCode','fail','lockUntil'];
+function clean(c,x){if(c!=='users'&&c!=='drivers')return x;const y={...x};for(const k of SECRET)delete y[k];return y}
+function rowsOf(){const out={};
+  for(const c of COLLS)for(const x of (S[c]||[]))if(x&&x.id){const d=clean(c,x);out[c+'/'+x.id]={coll:c,id:x.id,dept:c==='users'?null:(x.dept||null),data:d}}
+  out['settings/main']={coll:'settings',id:'main',dept:null,data:S.settings};
+  out['meta/seq']={coll:'meta',id:'seq',dept:null,data:{seq:S.seq||1000}};
+  for(const l of (S.log||[]))if(l.id)out['log/'+l.id]={coll:'log',id:l.id,dept:null,data:l};
+  return out}
+// find what changed since the last sync and queue it
+function clQueue(){if(!CL.ready)return;const rows=rowsOf();
+  for(const k in rows){const js=JSON.stringify(rows[k].data),hh=h32(js);if(CL.synced[k]!==hh){rows[k]._h=hh;CL.pending[k]=rows[k]}}
+  for(const k in CL.synced)if(!rows[k]&&!k.startsWith('log/')&&!k.startsWith('meta/')&&!k.startsWith('settings/')){const [c,id]=k.split('/');CL.pending[k]={coll:c,id,dept:null,data:{id},deleted:true,_h:'x'}}
+  clearTimeout(CL.timer);CL.timer=setTimeout(clFlush,400)}
+async function clFlush(){if(CL.busy||!CL.ses)return;const keys=Object.keys(CL.pending);if(!keys.length)return;CL.busy=true;
+  const send=async ks=>{const body=ks.map(k=>{const r=CL.pending[k];return{coll:r.coll,id:r.id,dept:r.dept,data:r.data,deleted:!!r.deleted}});
+    await sbFetch('/rest/v1/records?on_conflict=coll,id',{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body});
+    for(const k of ks){const r=CL.pending[k];if(!r)continue;if(r.deleted)delete CL.synced[k];else CL.synced[k]=r._h;delete CL.pending[k]}};
+  try{for(let i=0;i<keys.length;i+=200){const ks=keys.slice(i,i+200);
+      try{await send(ks)}catch(e){if(e.offline||e.status>=500||e.status===401)throw e;
+        // a row this account may not write: send one by one and drop the refused ones
+        for(const k of ks){try{await send([k])}catch(e2){if(e2.offline)throw e2;const r=CL.pending[k];if(r&&!r.deleted)CL.synced[k]=r._h;else delete CL.synced[k];delete CL.pending[k]}}}}
+    CL.last=Date.now()}
+  catch(e){setTimeout(clFlush,e.offline?15000:5000)}
+  finally{CL.busy=false;clStore()}}
+
+// pull rows changed on the server and merge them into the app state
+async function clPull(full){if(!CL.ses)return false;const since=full||!CL.lastTs?null:new Date(new Date(CL.lastTs).getTime()-30000).toISOString();
+  let rows=[],off=0;
+  for(;;){const q=`/rest/v1/records?select=coll,id,data,deleted,updated_at&order=updated_at.asc&limit=1000&offset=${off}`+(since?`&updated_at=gt.${encodeURIComponent(since)}`:'');
+    const part=await sbFetch(q);rows=rows.concat(part||[]);if(!part||part.length<1000)break;off+=1000}
+  if(full){for(const c of COLLS)S[c]=[];S.log=[]}
+  let changed=false;
+  for(const r of rows){const k=r.coll+'/'+r.id;if(!CL.lastTs||r.updated_at>CL.lastTs)CL.lastTs=r.updated_at;
+    if(CL.pending[k])continue; // our own unsent change wins
+    const hh=h32(JSON.stringify(r.data));if(!full&&CL.synced[k]===hh&&!r.deleted)continue;changed=true;
+    if(r.coll==='settings'){S.settings=Object.assign({},SETTINGS0,r.data);CL.synced[k]=hh;continue}
+    if(r.coll==='meta'){if(r.id==='seq')S.seq=Math.max(S.seq||1000,+r.data.seq||0);CL.synced[k]=hh;continue}
+    if(r.coll==='log'){if(!S.log.some(l=>l.id===r.id))S.log.push(r.data);CL.synced[k]=hh;continue}
+    if(!COLLS.includes(r.coll))continue;const arr=S[r.coll]||(S[r.coll]=[]);const i=arr.findIndex(x=>x.id===r.id);
+    if(r.deleted){if(i>=0)arr.splice(i,1);delete CL.synced[k];continue}
+    if(i>=0)arr[i]=r.data;else arr.push(r.data);CL.synced[k]=hh}
+  if(changed){S.log.sort((a,b)=>a.at<b.at?1:-1);S.log.length=Math.min(S.log.length,300);try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+  clStore();return changed}
+
+async function clProfiles(){if(!isMgr())return;try{const ps=await sbFetch('/rest/v1/profiles?select=id_no,auth_id,act_code,role,dept,kind,rec_id');CL.profiles={};for(const p of ps||[])CL.profiles[p.id_no]=p}catch(e){}}
+const accActive=a=>{const p=CL.profiles[a.idNo];return !!(p&&p.auth_id)};
+
+/* ---- photos in storage ---- */
+async function phUpload(id){const data=await photoGet(id);if(!data)return true;const b=await (await fetch(data)).blob();
+  try{await sbFetch('/storage/v1/object/photos/'+id+'.jpg',{method:'POST',headers:{'Content-Type':'image/jpeg'},body:b});return true}
+  catch(e){if(e.status===400||e.status===409)return true;return false}}
+async function phFlush(){if(!CL.ses||!CL.phq.length)return;const left=[];for(const id of CL.phq)if(!(await phUpload(id)))left.push(id);CL.phq=left;clStore()}
+function phQueue(id){if(!CL.phq.includes(id))CL.phq.push(id);clStore();phFlush()}
+async function phDownload(id){try{const r=await sbFetch('/storage/v1/object/authenticated/photos/'+id+'.jpg',{raw:true});const b=await r.blob();
+  const data=await new Promise(res=>{const fr=new FileReader();fr.onload=()=>res(fr.result);fr.onerror=()=>res(null);fr.readAsDataURL(b)});if(data)await photoPut(id,data);return data}catch(e){return null}}
+
+/* ---- session start ---- */
+async function clStart(){CL.loading=true;render();
+  try{const me=await sbFetch('/rest/v1/profiles?select=*&auth_id=eq.'+CL.ses.uid);const p=me&&me[0];
+    if(!p){sbSignOut();SES=null;CL.loading=false;toast(t('acc_not_linked'),'bad');return render()}
+    const full=!CL.ready||!CL.lastTs;CL.ready=true;await clPull(full);
+    const a=(p.role==='driver'?S.drivers:S.users).find(x=>x.id===p.rec_id);
+    SES={id:p.rec_id,name:(a&&a.name)||p.name||'',role:p.role};try{localStorage.setItem(SES_KEY,JSON.stringify(SES))}catch(e){}
+    migrate();await clProfiles();CL.loading=false;ui.tab='home';ui.stack=[];render();clQueue();phFlush()}
+  catch(e){CL.loading=false;if(e.offline&&SES){CL.ready=true;render();return}toast(e.offline?t('offline'):t('server_err'),'bad');render()}}
+async function clTick(){if(!CL.ses||!CL.ready||CL.loading||document.hidden)return;try{await clFlush();const ch=await clPull(false);if(ch){if(ui.sheet||ui.confirm)CL.dirty=true;else render()}}catch(e){}}
+setInterval(()=>{if(CL.dirty&&!ui.sheet&&!ui.confirm){CL.dirty=false;render()}},1500);
+setInterval(clTick,20000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)clTick()});
+window.addEventListener('online',()=>{clFlush();phFlush()});
+
+/* ---- sign-in screens (replace the device-only ones) ---- */
+async function clLogin(){const n=(($('#lid')||{}).value||'').replace(/\D/g,''),pw=($('#lpw')||{}).value||'';ui.loginId=n;
+  if(!idKind(n))return toast(t('id_invalid'),'bad');if(!pw)return toast(t('login_bad2'),'bad');
+  try{toast(t('loading'));const em=await rpc('login_email',{p_id:n});if(!em){$('#toast').hidden=true;return toast(t('need_activation'),'bad')}
+    await sbSignIn(em,pw);$('#toast').hidden=true;await clStart()}
+  catch(e){toast(e.offline?t('offline'):(e.status===429?t('locked',{m:5}):t('login_bad2')),'bad');const p=$('#lpw');if(p){p.value='';p.focus()}}}
+async function clActCheck(){const n=(($('#lid')||{}).value||'').replace(/\D/g,''),c=(($('#acode')||{}).value||'').replace(/\D/g,'');ui.loginId=n;
+  if(!idKind(n))return toast(t('id_invalid'),'bad');
+  try{const r=await rpc('check_code',{p_id:n,p_code:c});if(r==='locked')return toast(t('locked_code'),'bad');if(!r||r==='bad')return toast(t('act_bad'),'bad');
+    ui.pend={idNo:n,code:c,email:r,name:''};ui.lmode='setpw';$('#toast').hidden=true;render();setTimeout(()=>{const e=$('#npw');if(e)e.focus()},40)}
+  catch(e){toast(e.offline?t('offline'):t('server_err'),'bad')}}
+async function clPwSave(){const pw=($('#npw')||{}).value||'',pw2=($('#npw2')||{}).value||'',pd=ui.pend;if(!pd)return;
+  if(pw.length<6)return toast(t('pw_rule'),'bad');if(pw!==pw2)return toast(t('pw_mismatch'),'bad');
+  try{toast(t('loading'));await sbSignUp(pd.email,pw);await rpc('claim',{p_id:pd.idNo,p_code:pd.code});ui.pend=null;ui.lmode='login';$('#toast').hidden=true;await clStart()}
+  catch(e){toast(e.offline?t('offline'):(/registered|exists/i.test(e.message)?t('act_used'):t('server_err')+' ('+e.message+')'),'bad')}}
+// first manager: create the account, then upload everything already on this phone
+async function clSetup(){const v=k=>(($('#'+k)||{}).value||'').trim(),co=v('su-co'),nm=v('su-name'),id=v('su-id').replace(/\D/g,''),mob=normPhone(v('su-mob')),pw=($('#su-pw')||{}).value||'',pw2=($('#su-pw2')||{}).value||'';
+  if(!nm)return toast(t('required'),'bad');if(!idKind(id))return toast(t('id_invalid'),'bad');if(!/^05\d{8}$/.test(mob))return toast(t('phone_invalid'),'bad');
+  if(pw.length<6)return toast(t('pw_rule'),'bad');if(pw!==pw2)return toast(t('pw_mismatch'),'bad');
+  try{toast(t('uploading'));if(co)S.settings.company=co;
+    let u=S.users.find(x=>x.idNo===id);if(!u){u={id:uid('u'),name:nm,role:'manager',idNo:id,phone:mob};S.users.push(u)}else Object.assign(u,{name:nm,role:'manager',phone:mob});
+    await sbSignUp(email(id,1),pw);await rpc('setup_manager',{p_id:id,p_rec:u.id,p_name:nm});
+    for(const l of S.log)if(!l.id)l.id=uid('l');
+    CL.ready=true;CL.synced={};clQueue();clearTimeout(CL.timer);await clFlush();
+    // accounts for staff and drivers already on this phone (they get new activation codes)
+    for(const x of S.users)if(x.id!==u.id&&x.idNo)await rpc('save_account',{p_id:x.idNo,p_old_id:null,p_kind:'user',p_rec:x.id,p_role:x.role,p_dept:x.dept||depts()[0].id,p_name:x.name,p_code:newActCode()});
+    for(const d of S.drivers)if(d.idNo&&d.status!=='ds_left')await rpc('save_account',{p_id:d.idNo,p_old_id:null,p_kind:'driver',p_rec:d.id,p_role:'driver',p_dept:d.dept||depts()[0].id,p_name:d.name,p_code:newActCode()});
+    const ph=[];JSON.stringify(S).replace(/"(ph_[a-z0-9]+)"/g,(m,x)=>ph.push(x));for(const x of ph)if(!CL.phq.includes(x))CL.phq.push(x);clStore();
+    $('#toast').hidden=true;await clStart();toast(t('cloud_done'))}
+  catch(e){toast(e.offline?t('offline'):t('server_err')+' ('+e.message+')','bad')}}
+
+// account changes made by the manager
+function clAccount(a,kind,oldId){if(!CL.ready)return;const code=a._newCode||null;delete a._newCode;
+  rpc('save_account',{p_id:a.idNo,p_old_id:oldId||null,p_kind:kind,p_rec:a.id,p_role:kind==='driver'?'driver':a.role,p_dept:kind==='driver'?(a.dept||defDept()):(a.role==='manager'?'all':(a.dept||defDept())),p_name:a.name,p_code:code})
+   .then(clProfiles).then(()=>{if(!ui.sheet)render()}).catch(e=>toast(t('server_err')+' ('+e.message+')','bad'))}
 
 /* ===== Load Manager — single-page app (state in localStorage, photos in IndexedDB) ===== */
 const KEY='naql-demo-v1',SES_KEY='naql-session',PREF_KEY='naql-prefs';
@@ -663,6 +813,7 @@ const curMonth=()=>today().slice(0,7);
 const addDays=(d,n)=>{const x=new Date(d+'T00:00:00');x.setDate(x.getDate()+n);return x.getFullYear()+'-'+pad(x.getMonth()+1)+'-'+pad(x.getDate())};
 const daysBetween=(a,b)=>Math.round((new Date(b+'T00:00:00')-new Date(a+'T00:00:00'))/864e5);
 const loc=()=>LANG+'-u-ca-gregory-nu-latn';
+const ftime=d=>{try{return new Intl.DateTimeFormat(loc(),{hour:'numeric',minute:'2-digit',day:'numeric',month:'short'}).format(d)}catch(e){return ''}};
 const fdate=d=>{if(!d)return '—';try{return new Intl.DateTimeFormat(loc(),{day:'numeric',month:'short',year:'numeric'}).format(new Date(d.length<=10?d+'T00:00:00':d))}catch(e){return d}};
 const fdt=d=>{if(!d)return '—';try{return new Intl.DateTimeFormat(loc(),{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}).format(new Date(d))}catch(e){return d}};
 const fmonth=m=>{try{return new Intl.DateTimeFormat(loc(),{month:'long',year:'numeric'}).format(new Date(m+'-01T00:00:00'))}catch(e){return m}};
@@ -714,13 +865,13 @@ function idbOpen(){return new Promise(res=>{try{const r=indexedDB.open('naql-pho
 function photoPut(id,data){return new Promise(res=>{if(!idb)return res(false);try{const tx=idb.transaction('p','readwrite');tx.objectStore('p').put(data,id);tx.oncomplete=()=>res(true);tx.onerror=()=>res(false)}catch(e){res(false)}})}
 function photoGet(id){return new Promise(res=>{if(!idb)return res(null);try{const r=idb.transaction('p').objectStore('p').get(id);r.onsuccess=()=>res(r.result||null);r.onerror=()=>res(null)}catch(e){res(null)}})}
 const photoCache={};
-async function hydratePhotos(root){for(const img of root.querySelectorAll('img[data-ph]')){const id=img.dataset.ph;if(!photoCache[id])photoCache[id]=await photoGet(id);if(photoCache[id])img.src=photoCache[id];else img.style.display='none'}}
-function shrink(file){return new Promise(res=>{const fr=new FileReader();fr.onload=()=>{const im=new Image();im.onload=()=>{const m=1100,k=Math.min(1,m/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext('2d').drawImage(im,0,0,c.width,c.height);res(c.toDataURL('image/jpeg',.72))};im.onerror=()=>res(null);im.src=fr.result};fr.onerror=()=>res(null);fr.readAsDataURL(file)})}
+async function hydratePhotos(root){for(const img of root.querySelectorAll('img[data-ph]')){const id=img.dataset.ph;if(!photoCache[id])photoCache[id]=await photoGet(id);if(!photoCache[id]&&CL.ses)photoCache[id]=await phDownload(id);if(photoCache[id])img.src=photoCache[id];else img.style.display='none'}}
+function shrink(file){return new Promise(res=>{const fr=new FileReader();fr.onload=()=>{const im=new Image();im.onload=()=>{const m=1000,k=Math.min(1,m/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext('2d').drawImage(im,0,0,c.width,c.height);res(c.toDataURL('image/jpeg',.6))};im.onerror=()=>res(null);im.src=fr.result};fr.onerror=()=>res(null);fr.readAsDataURL(file)})}
 
 /* ---------- state ---------- */
-function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){toast('⚠ storage full','bad')}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){toast('⚠ storage full','bad')}if(CL.ready)clQueue()}
 function savePrefs(){try{localStorage.setItem(PREF_KEY,JSON.stringify(PREFS))}catch(e){}}
-function log(msg){S.log.unshift({at:nowISO(),by:SES?SES.name:'',msg});S.log.length=Math.min(S.log.length,300)}
+function log(msg){S.log.unshift({id:uid('l'),at:nowISO(),by:SES?SES.name:'',msg});S.log.length=Math.min(S.log.length,300)}
 const byId=(arr,id)=>(S[arr]||[]).find(x=>x.id===id);
 
 // bring data saved by older versions up to date
@@ -749,8 +900,8 @@ async function hashPw(pw,salt){const enc=new TextEncoder();
 async function setPw(a,pw){a.pwSalt=uid('s')+Math.random().toString(36).slice(2);a.pwHash=await hashPw(pw,a.pwSalt);delete a.actCode;a.fail=0;a.lockUntil=0}
 const newActCode=()=>String(Math.floor(100000+Math.random()*900000));
 const findAcc=n=>{const u=S.users.find(x=>x.idNo===n);if(u)return{a:u,role:u.role};const d=S.drivers.find(x=>x.idNo===n&&x.status!=='ds_left');return d?{a:d,role:'driver'}:null};
-const accState=a=>a.pwHash?'acc_active':'acc_pending';
-function showAct(a){a.actCode=newActCode();delete a.pwHash;delete a.pwSalt;ui.actShow={name:a.name,phone:a.phone,code:a.actCode}}
+const accState=a=>(CL.ready?accActive(a):!!a.pwHash)?'acc_active':'acc_pending';
+function showAct(a){if(CL.ready){a._newCode=newActCode();ui.actShow={name:a.name,phone:a.phone,code:a._newCode};return}a.actCode=newActCode();delete a.pwHash;delete a.pwSalt;ui.actShow={name:a.name,phone:a.phone,code:a.actCode}}
 function waLinkTo(phone,text){const n=normPhone(phone).replace(/^0/,'966');return`https://wa.me/${n}?text=${encodeURIComponent(text)}`}
 const appUrl=()=>location.protocol.startsWith('http')&&!/claude\.ai|claudeusercontent/.test(location.host)?location.origin+location.pathname:'';
 const normPhone=v=>{let n=String(v||'').replace(/[^\d]/g,'');if(n.startsWith('00966'))n='0'+n.slice(5);else if(n.startsWith('966'))n='0'+n.slice(3);else if(/^5\d{8}$/.test(n))n='0'+n;return n};
@@ -932,7 +1083,7 @@ function tripForm(p){if(!guard('trips'))return;const isNew=!p;if(isNew&&!DS.clie
     {k:'truckId',l:t('truck'),type:'select',opts:truckOpts()},
     {k:'bayan',l:t('bayan'),full:true},{k:'notes',l:t('notes'),type:'textarea'}],
    onSave:v=>{if(v.driverId&&!v.truckId)return t('need_truck_driver');
-     if(isNew){const no=++S.seq;const np={id:'p'+no,no,...v,dept:(byId('trucks',v.truckId)||{}).dept||defDept(),vat:+S.settings.vat,status:'new',depart:'',arrive:'',odoStart:'',odoEnd:'',expenses:[],payments:[],confirmed:null,created:today(),events:[],loadDocs:[],cargoPhotos:[],unloadDocs:[]};
+     if(isNew){const no=++S.seq;const np={id:uid('p'),no,...v,dept:(byId('trucks',v.truckId)||{}).dept||defDept(),vat:+S.settings.vat,status:'new',depart:'',arrive:'',odoStart:'',odoEnd:'',expenses:[],payments:[],confirmed:null,created:today(),events:[],loadDocs:[],cargoPhotos:[],unloadDocs:[]};
        addEv(np,'created');if(np.driverId){np.status='sent';addEv(np,'sent',{n:driverName(np.driverId)})}
        S.trips.push(np);log(`+ ${t('trip')} ${no}`);ui.stack=[{type:'trip',id:np.id}];ui.tab='trips'}
      else{Object.assign(p,v);{const tk=byId('trucks',p.truckId);if(tk&&tk.dept)p.dept=tk.dept}if(v.driverId&&v.driverId!==prevDriver&&['new','sent','accepted'].includes(p.status)){p.status='sent';p.lastReject='';addEv(p,'sent',{n:driverName(v.driverId)})}
@@ -980,15 +1131,15 @@ function truckForm(x){if(!guard('fleet'))return;const isNew=!x;
    onSave:v=>{const docs={};for(const k of['istimara','insurance','inspection','opcard']){docs[k]=v['doc_'+k]||'';delete v['doc_'+k]}
      if(isNew){const n={id:uid('t'),dept:defDept(),...v,docs};if(n.lastService==='')n.lastService=n.odo;S.trucks.push(n);log(`+ ${t('truck')} ${n.plate}`)}else{Object.assign(x,v,{docs});log(`${t('edit')} ${t('truck')} ${x.plate}`)}}})}
 
-function accBox(a,type){return`<div class="note spread"><span>${esc(t('login_state'))}: ${pill(accState(a),a.pwHash?'good':'warn')}</span><button class="btn ghost sm" data-act="acc-reset" data-type="${type}" data-id="${a.id}">${esc(t('reset_login'))}</button></div>`}
+function accBox(a,type){return`<div class="note spread"><span>${esc(t('login_state'))}: ${pill(accState(a),accState(a)==='acc_active'?'good':'warn')}</span><button class="btn ghost sm" data-act="acc-reset" data-type="${type}" data-id="${a.id}">${esc(t('reset_login'))}</button></div>`}
 function driverForm(x){if(!guard('fleet'))return;const isNew=!x;
   openForm({title:isNew?t('new_driver'):x.name,extra:x?()=>accBox(x,'drivers'):null,values:x?{...x}:{mode:'em_trip',status:'ds_active'},del:!isNew&&can('*'),
    fields:[...deptFld(),{k:'name',l:t('name'),req:true,full:true},{k:'idNo',l:t('id_or_iqama'),req:true,type:'tel'},{k:'phone',l:t('phone'),type:'tel',req:true},{k:'idExp',l:t('id_exp'),type:'date'},{k:'licExp',l:t('lic_exp'),type:'date'},
     {k:'salary',l:t('salary'),type:'number',min:0},{k:'allow',l:t('allowances'),type:'number',min:0},
     {k:'mode',l:t('exp_mode'),type:'select',opts:keyOpts(['em_trip','em_day','em_km']),empty:false},{k:'rate',l:t('exp_rate'),type:'number',min:0},
     {k:'truckId',l:t('assigned_truck'),type:'select',opts:opt(DS.trucks,x=>x.plate)},{k:'status',l:t('status'),type:'select',opts:keyOpts(['ds_active','ds_leave','ds_left']),empty:false}],
-   onDel:()=>{if(S.trips.some(p=>p.driverId===x.id))return t('not_allowed');S.drivers=S.drivers.filter(y=>y.id!==x.id);ui.stack=[]},
-   onSave:v=>{v.idNo=String(v.idNo).replace(/\D/g,'');v.phone=normPhone(v.phone);if(!idKind(v.idNo))return t('id_invalid');if(idTaken(v.idNo,x&&x.id))return t('id_taken');if(!/^05\d{8}$/.test(v.phone))return t('phone_invalid');if(isNew){const d={id:uid('d'),dept:defDept(),...v};S.drivers.push(d);showAct(d);log(`+ ${t('driver')} ${v.name}`)}else Object.assign(x,v)}})}
+   onDel:()=>{if(S.trips.some(p=>p.driverId===x.id))return t('not_allowed');S.drivers=S.drivers.filter(y=>y.id!==x.id);if(CL.ready)rpc('delete_account',{p_id:x.idNo}).catch(()=>{});ui.stack=[]},
+   onSave:v=>{v.idNo=String(v.idNo).replace(/\D/g,'');v.phone=normPhone(v.phone);if(!idKind(v.idNo))return t('id_invalid');if(idTaken(v.idNo,x&&x.id))return t('id_taken');if(!/^05\d{8}$/.test(v.phone))return t('phone_invalid');if(isNew){const d={id:uid('d'),dept:defDept(),...v};S.drivers.push(d);showAct(d);clAccount(d,'driver');log(`+ ${t('driver')} ${v.name}`)}else{const old=x.idNo;Object.assign(x,v);clAccount(x,'driver',old!==x.idNo?old:null)}}})}
 
 function tyreForm(x,truckId){if(!guard('fleet'))return;
   openForm({title:x?t('tyre'):t('new_tyre'),values:x?{...x}:{truckId:truckId||'',date:today(),status:'ty_ok',odo:truckId?byId('trucks',truckId).odo:''},del:!!x,
@@ -1028,8 +1179,8 @@ function userForm(x){if(!guard('*'))return;
    intro:t('users_note'),
    fields:[{k:'name',l:t('name'),req:true,full:true},{k:'role',l:t('role'),type:'select',opts:[['manager',t('role_manager')],['accountant',t('role_accountant')],['dispatcher',t('role_dispatcher')]],empty:false},
     {k:'idNo',l:t('id_or_iqama'),type:'tel',req:true},{k:'phone',l:t('phone'),type:'tel',req:true},{k:'dept',l:t('dept_access'),type:'select',opts:[...depts().map(d=>[d.id,d.name]),['all',t('all_depts')]],empty:false,full:true,show:f=>f.role!=='manager',hint:t('dept_access_hint')}],
-   onDel:()=>{if(x.id===SES.id)return t('cant_delete_self');S.users=S.users.filter(y=>y.id!==x.id)},
-   onSave:v=>{v.idNo=String(v.idNo).replace(/\D/g,'');v.phone=normPhone(v.phone);if(!idKind(v.idNo))return t('id_invalid');if(idTaken(v.idNo,x&&x.id))return t('id_taken');if(!/^05\d{8}$/.test(v.phone))return t('phone_invalid');if(x&&x.id===SES.id&&v.role!=='manager')return t('not_allowed');if(x)Object.assign(x,v);else{const u={id:uid('u'),...v};S.users.push(u);showAct(u)}log(`${t('users')}: ${v.name}`)}})}
+   onDel:()=>{if(x.id===SES.id)return t('cant_delete_self');S.users=S.users.filter(y=>y.id!==x.id);if(CL.ready)rpc('delete_account',{p_id:x.idNo}).catch(()=>{})},
+   onSave:v=>{v.idNo=String(v.idNo).replace(/\D/g,'');v.phone=normPhone(v.phone);if(!idKind(v.idNo))return t('id_invalid');if(idTaken(v.idNo,x&&x.id))return t('id_taken');if(!/^05\d{8}$/.test(v.phone))return t('phone_invalid');if(x&&x.id===SES.id&&v.role!=='manager')return t('not_allowed');if(x){const old=x.idNo;Object.assign(x,v);clAccount(x,'user',old!==x.idNo?old:null)}else{const u={id:uid('u'),...v};S.users.push(u);showAct(u);clAccount(u,'user')}log(`${t('users')}: ${v.name}`)}})}
 
 function settingsForm(){if(!guard('*'))return;
   openForm({title:t('company'),values:{...S.settings},
@@ -1076,11 +1227,11 @@ const emptyBox=()=>`<div class="empty">${esc(t('no_data'))}</div>`;
 
 V.setup=()=>`<div class="login"><div class="brand"><div class="logo">${IC.truck}</div><div><h1>${esc(t('setup_title'))}</h1><div class="muted small">${esc(t('appName'))}</div></div></div>
   <div class="seg" role="group" aria-label="${esc(t('language'))}">${LANGS.map(l=>`<button data-act="lang" data-id="${l[0]}" aria-pressed="${LANG===l[0]}">${l[1]}</button>`).join('')}</div>
-  <div class="card stack"><p class="muted small" style="margin:0">${esc(t('setup_note'))}</p>
+  <div class="card stack"><p class="muted small" style="margin:0">${esc(t('setup_note'))}</p>${CL.on&&S.trips.length+S.trucks.length+S.users.length?`<p class="note small" style="margin:0">${esc(t('cloud_setup_note'))}</p>`:''}
    <label class="fld" for="su-co"><span>${esc(t('company_name'))}</span><input id="su-co" value="${esc(S.settings.company)}"></label>
-   <label class="fld" for="su-name"><span>${esc(t('manager_name'))}</span><input id="su-name" autocomplete="name"></label>
-   <label class="fld" for="su-id"><span>${esc(t('id_or_iqama'))}</span><input id="su-id" inputmode="numeric" maxlength="10" dir="ltr" placeholder="1XXXXXXXXX"></label>
-   <label class="fld" for="su-mob"><span>${esc(t('phone'))}</span><input id="su-mob" type="tel" inputmode="tel" maxlength="13" dir="ltr" placeholder="05XXXXXXXX"></label>
+   <label class="fld" for="su-name"><span>${esc(t('manager_name'))}</span><input id="su-name" autocomplete="name" value="${esc(((S.users.find(u=>u.role==='manager')||{}).name)||'')}"></label>
+   <label class="fld" for="su-id"><span>${esc(t('id_or_iqama'))}</span><input id="su-id" inputmode="numeric" maxlength="10" dir="ltr" placeholder="1XXXXXXXXX" value="${esc(((S.users.find(u=>u.role==='manager')||{}).idNo)||'')}"></label>
+   <label class="fld" for="su-mob"><span>${esc(t('phone'))}</span><input id="su-mob" type="tel" inputmode="tel" maxlength="13" dir="ltr" placeholder="05XXXXXXXX" value="${esc(((S.users.find(u=>u.role==='manager')||{}).phone)||'')}"></label>
    <label class="fld" for="su-pw"><span>${esc(t('password'))}</span><input id="su-pw" type="password" autocomplete="new-password" dir="ltr"><span class="hint">${esc(t('pw_rule'))}</span></label>
    <label class="fld" for="su-pw2"><span>${esc(t('password2'))}</span><input id="su-pw2" type="password" autocomplete="new-password" dir="ltr"></label>
    <button class="btn block" data-act="setup-save">${esc(t('start'))}</button></div></div>`;
@@ -1094,7 +1245,7 @@ V.login=()=>{const m=ui.lmode||'login',n=(ui.loginId||'').replace(/\D/g,''),k=id
    <label class="fld" for="npw2"><span>${esc(t('password2'))}</span><input id="npw2" type="password" autocomplete="new-password" dir="ltr"></label>
    <button class="btn block" data-act="pw-save">${esc(t('save'))}</button><button class="link" data-act="lmode" data-id="login">${esc(t('back_login'))}</button></div></div>`;
   if(m==='activate')return`<div class="login">${head}<div class="card stack"><h2>${esc(t('first_login'))}</h2><p class="muted small" style="margin:0">${esc(t('act_note'))}</p>${idField}
-   <label class="fld" for="acode"><span>${esc(t('act_code'))}</span><input id="acode" type="text" inputmode="numeric" maxlength="10" autocomplete="one-time-code" dir="ltr" class="pin"><span class="hint">${esc(t('act_hint_legacy'))}</span></label>
+   <label class="fld" for="acode"><span>${esc(t('act_code'))}</span><input id="acode" type="text" inputmode="numeric" maxlength="10" autocomplete="one-time-code" dir="ltr" class="pin">${CL.on?'':`<span class="hint">${esc(t('act_hint_legacy'))}</span>`}</label>
    <button class="btn block" data-act="act-check">${esc(t('continue'))}</button><button class="link" data-act="lmode" data-id="login">${esc(t('back_login'))}</button></div></div>`;
   return`<div class="login">${head}<div class="card stack"><h2>${esc(t('login_title'))}</h2>${idField}
    <label class="fld" for="lpw"><span>${esc(t('password'))}</span><input id="lpw" type="password" autocomplete="current-password" dir="ltr"></label>
@@ -1314,7 +1465,8 @@ V.settings=()=>bar(t('settings'))+`<main class="stack">
   ${sec(t('theme'),`<div class="seg">${['auto','light','dark'].map(k=>`<button data-act="theme" data-id="${k}" aria-pressed="${PREFS.theme===k}">${esc(t('th_'+k))}</button>`).join('')}</div>`)}
   ${can('*')?sec(t('company'),`<div class="card"><dl class="kv"><dt>${esc(t('company_name'))}</dt><dd>${esc(S.settings.company)}</dd><dt>${esc(t('vat_no'))}</dt><dd class="num">${esc(S.settings.vatNo||'—')}</dd><dt>${esc(t('vat_pct'))}</dt><dd class="num">${S.settings.vat}%</dd><dt>${esc(t('diesel_price'))}</dt><dd>${money(S.settings.dieselPrice)}</dd><dt>${esc(t('alert_days'))}</dt><dd class="num">${S.settings.alertDays}</dd></dl></div>`,`<button class="btn sec sm" data-act="settings-edit">${esc(t('edit'))}</button>`):''}
   ${can('*')?sec(t('depts'),`<div class="list">${depts().map(d=>`<button class="item" data-act="dept-edit" data-id="${d.id}"><span class="ic">${IC.grid}</span><span class="t"><b>${esc(d.name)}</b><span><span class="num">${S.trucks.filter(x=>x.dept===d.id).length}</span> ${esc(t('trucks'))} · <span class="num">${S.drivers.filter(x=>x.dept===d.id&&x.status!=='ds_left').length}</span> ${esc(t('drivers'))} · <span class="num">${S.users.filter(x=>x.dept===d.id&&x.role!=='manager').length}</span> ${esc(t('users'))}</span></span>${IC.chev||''}</button>`).join('')}</div>`,`<button class="btn sec sm" data-act="dept-new">${IC.plus}${esc(t('add'))}</button>`):''}
-  ${can('*')?sec(t('backup'),`<div class="row"><button class="btn sec" data-act="backup">${IC.save}${esc(t('export_backup'))}</button><label class="btn ghost">${IC.upload}${esc(t('import_backup'))}<input type="file" accept="application/json,.json" data-restore hidden></label></div><button class="btn ghost sm" data-act="reset" style="color:var(--bad)">${esc(t('wipe_data'))}</button>`):''}
+  ${CL.on?sec(t('cloud'),`<div class="card spread"><span class="small">${CL.offline?`<span class="negv">${esc(t('offline'))}</span>`:esc(t('last_sync'))+': '+(CL.last||CL.lastTs?ftime(new Date(CL.last||CL.lastTs)):'—')}${Object.keys(CL.pending).length?` · ${esc(t('synced_pending',{n:Object.keys(CL.pending).length}))}`:''}</span><button class="btn sec sm" data-act="sync-now">${esc(t('sync_now'))}</button></div>`):''}
+  ${can('*')?sec(t('backup'),`<div class="row"><button class="btn sec" data-act="backup">${IC.save}${esc(t('export_backup'))}</button><label class="btn ghost">${IC.upload}${esc(t('import_backup'))}<input type="file" accept="application/json,.json" data-restore hidden></label></div>${CL.on?'':`<button class="btn ghost sm" data-act="reset" style="color:var(--bad)">${esc(t('wipe_data'))}</button>`}`):''}
   <p class="note small">${esc(t('demo_note'))}</p></main>`;
 
 /* ---------- render ---------- */
@@ -1325,7 +1477,9 @@ const NAVS={manager:[['home','home',IC.home],['trips','trips',IC.route],['fleet'
 function applyLang(){const l=LANGS.find(x=>x[0]===LANG)||LANGS[0];document.documentElement.lang=l[0];document.documentElement.dir=l[2];document.title=t('appName');
   if(PREFS.theme==='auto')document.documentElement.removeAttribute('data-theme');else document.documentElement.setAttribute('data-theme',PREFS.theme)}
 function render(){applyLang();const app=$('#app');
-  if(!S.users.length){app.innerHTML=V.setup();return}
+  if(CL.loading&&!SES){app.innerHTML=`<div class="login"><div class="brand"><div class="logo">${IC.truck}</div><div><h1>${esc(S.settings.company)}</h1><div class="muted small">${esc(t('loading'))}</div></div></div><div class="spin"></div></div>`;return}
+  if(CL.on){if(!SES||!CL.ses){SES=null;app.innerHTML=CL.hasAcc===false?V.setup():V.login();return}}
+  else if(!S.users.length){app.innerHTML=V.setup();return}
   if(!SES){app.innerHTML=V.login();return}
   const acc=accountOf(SES);if(!acc){SES=null;app.innerHTML=V.login();return}
   if(!acc.phone){app.innerHTML=V.phone();return}
@@ -1354,35 +1508,36 @@ const ACT={
  'open':(id,el)=>{if(el.dataset.type==='client'&&ui.tab!=='clients'&&!ui.stack.length)ui.tab='clients';push(el.dataset.type,id)},
  'lang':id=>{LANG=id;PREFS.lang=id;savePrefs();render();if(ui.sheet)renderSheet()},
  'theme':id=>{PREFS.theme=id;savePrefs();render()},
- 'setup-save':async()=>{const v=k=>(($('#'+k)||{}).value||'').trim(),co=v('su-co'),nm=v('su-name'),id=v('su-id').replace(/\D/g,''),mob=normPhone(v('su-mob')),pw=($('#su-pw')||{}).value||'',pw2=($('#su-pw2')||{}).value||'';
+ 'setup-save':async()=>{if(CL.on)return clSetup();const v=k=>(($('#'+k)||{}).value||'').trim(),co=v('su-co'),nm=v('su-name'),id=v('su-id').replace(/\D/g,''),mob=normPhone(v('su-mob')),pw=($('#su-pw')||{}).value||'',pw2=($('#su-pw2')||{}).value||'';
    if(!nm)return toast(t('required'),'bad');if(!idKind(id))return toast(t('id_invalid'),'bad');if(!/^05\d{8}$/.test(mob))return toast(t('phone_invalid'),'bad');
    if(pw.length<6)return toast(t('pw_rule'),'bad');if(pw!==pw2)return toast(t('pw_mismatch'),'bad');
    if(co)S.settings.company=co;const u={id:uid('u'),name:nm,role:'manager',idNo:id,phone:mob};await setPw(u,pw);S.users.push(u);log(`${t('setup_title')}: ${nm}`);
    SES={id:u.id,name:u.name,role:'manager'};try{localStorage.setItem(SES_KEY,JSON.stringify(SES))}catch(e){}save();ui.tab='home';ui.stack=[];render()},
  'lmode':id=>{const el=$('#lid');if(el)ui.loginId=el.value.replace(/\D/g,'');ui.lmode=id;render()},
- 'login':async()=>{const n=(($('#lid')||{}).value||'').replace(/\D/g,''),pw=($('#lpw')||{}).value||'';ui.loginId=n;
+ 'login':async()=>{if(CL.on)return clLogin();const n=(($('#lid')||{}).value||'').replace(/\D/g,''),pw=($('#lpw')||{}).value||'';ui.loginId=n;
    if(!idKind(n))return toast(t('id_invalid'),'bad');const f=findAcc(n);
    if(f&&f.a.lockUntil>Date.now())return toast(t('locked',{m:Math.ceil((f.a.lockUntil-Date.now())/60e3)}),'bad');
    if(f&&!f.a.pwHash)return toast(t('need_activation'),'bad');
    const ok=f&&f.a.pwHash===await hashPw(pw,f.a.pwSalt||'');
    if(!ok){if(f){f.a.fail=(f.a.fail||0)+1;if(f.a.fail>=5){f.a.lockUntil=Date.now()+10*60e3;f.a.fail=0}save()}toast(t('login_bad2'),'bad');const p=$('#lpw');if(p){p.value='';p.focus()}return}
    f.a.fail=0;f.a.lockUntil=0;SES={id:f.a.id,name:f.a.name,role:f.role};$('#toast').hidden=true;try{localStorage.setItem(SES_KEY,JSON.stringify(SES))}catch(e){}log(`${t('login_title')}: ${f.a.name}`);save();ui.tab='home';ui.stack=[];ui.filter='active';render()},
- 'act-check':()=>{const n=(($('#lid')||{}).value||'').replace(/\D/g,''),c=(($('#acode')||{}).value||'').replace(/\D/g,'');ui.loginId=n;
+ 'act-check':()=>{if(CL.on)return clActCheck();const n=(($('#lid')||{}).value||'').replace(/\D/g,''),c=(($('#acode')||{}).value||'').replace(/\D/g,'');ui.loginId=n;
    if(!idKind(n))return toast(t('id_invalid'),'bad');const f=findAcc(n);
    if(f&&f.a.lockUntil>Date.now())return toast(t('locked',{m:Math.ceil((f.a.lockUntil-Date.now())/60e3)}),'bad');
    // accounts made before passwords existed can confirm with their registered mobile instead of a code
    const ok=f&&((f.a.actCode&&c===f.a.actCode)||(!f.a.actCode&&!f.a.pwHash&&f.a.phone&&c===normPhone(f.a.phone).replace(/\D/g,'')));
    if(!ok){if(f){f.a.fail=(f.a.fail||0)+1;if(f.a.fail>=5){f.a.lockUntil=Date.now()+10*60e3;f.a.fail=0}save()}return toast(t('act_bad'),'bad')}
    ui.pend={id:f.a.id,role:f.role,name:f.a.name,code:c};ui.lmode='setpw';$('#toast').hidden=true;render();setTimeout(()=>{const e=$('#npw');if(e)e.focus()},40)},
- 'pw-save':async()=>{const pw=($('#npw')||{}).value||'',pw2=($('#npw2')||{}).value||'',pd=ui.pend;if(!pd)return;
+ 'pw-save':async()=>{if(CL.on)return clPwSave();const pw=($('#npw')||{}).value||'',pw2=($('#npw2')||{}).value||'',pd=ui.pend;if(!pd)return;
    if(pw.length<6)return toast(t('pw_rule'),'bad');if(pw!==pw2)return toast(t('pw_mismatch'),'bad');
    const a=pd.role==='driver'?byId('drivers',pd.id):byId('users',pd.id);if(!a)return;await setPw(a,pw);
    SES={id:a.id,name:a.name,role:pd.role};ui.pend=null;ui.lmode='login';$('#toast').hidden=true;try{localStorage.setItem(SES_KEY,JSON.stringify(SES))}catch(e){}log(`${t('set_pw_title')}: ${a.name}`);save();toast(t('saved'));ui.tab='home';ui.stack=[];render()},
- 'acc-reset':(id,el)=>{if(!guard('*'))return;const a=byId(el.dataset.type,id);if(!a)return;ui.confirm={msg:t('reset_login')+' · '+a.name,sub:t('reset_login_note'),ok:t('reset_login'),kind:'',fn:()=>{showAct(a);closeSheet();log(`${t('reset_login')}: ${a.name}`)}};render()},
+ 'acc-reset':(id,el)=>{if(!guard('*'))return;const a=byId(el.dataset.type,id);if(!a)return;ui.confirm={msg:t('reset_login')+' · '+a.name,sub:t('reset_login_note'),ok:t('reset_login'),kind:'',fn:()=>{showAct(a);if(CL.ready){const code=a._newCode;delete a._newCode;rpc('reset_account',{p_id:a.idNo,p_code:code}).then(clProfiles).catch(e=>toast(t('server_err'),'bad'))}closeSheet();log(`${t('reset_login')}: ${a.name}`)}};render()},
  'act-close':()=>{ui.actShow=null;render()},
  'act-copy':()=>{const c=ui.actShow&&ui.actShow.code;if(!c)return;try{navigator.clipboard.writeText(c).then(()=>toast(t('copied')),()=>{})}catch(e){}},
  'phone-save':()=>{const v=(($('#mob')||{}).value||'').replace(/\s/g,'');if(!/^05\d{8}$/.test(v)){toast(t('phone_invalid'),'bad');return}
    const a=accountOf(SES);a.phone=v;log(`${t('phone')}: ${a.name}`);save();toast(t('phone_saved'));render()},
+ 'sync-now':async()=>{toast(t('loading'));try{await clFlush();await clPull(false);await phFlush();toast(t('saved'))}catch(e){toast(t('offline'),'bad')}render()},
  'dept-set':v=>{PREFS.dept=v;try{localStorage.setItem(PREF_KEY,JSON.stringify(PREFS))}catch(e){}ui.stack=[];render()},
  'dept-new':()=>{if(!guard('*'))return;openForm({title:t('new_dept'),values:{},fields:[{k:'name',l:t('name'),req:true,full:true}],onSave:v=>{S.depts=depts().slice();S.depts.push({id:uid('dp'),name:v.name});log(`+ ${t('dept')} ${v.name}`)}})},
  'dept-edit':id=>{if(!guard('*'))return;const d=depts().find(x=>x.id===id);if(!d)return;openForm({title:d.name,values:{...d},del:true,fields:[{k:'name',l:t('name'),req:true,full:true}],
@@ -1402,7 +1557,7 @@ const ACT={
  'drv-exp':id=>{const p=byId('trips',id);if(!p)return;ui.stack=[{type:'trip',id}];render();expenseForm(p)},
  'ph-del':(id,el)=>{const k=el.dataset.type;ui.form[k]=(ui.form[k]||[]).filter(x=>x!==id);renderSheet()},
  'lb-close':(id,el,e)=>{ui.lightbox=null;render()},
- 'logout':()=>{SES=null;try{localStorage.removeItem(SES_KEY)}catch(e){}ui.loginUser=null;ui.stack=[];render()},
+ 'logout':()=>{if(CL.on){sbSignOut();S=emptyState(S.settings);try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}clearPhotos()}SES=null;try{localStorage.removeItem(SES_KEY)}catch(e){}ui.loginUser=null;ui.stack=[];render()},
  'trips-filter':id=>{ui.filter=id;ui.tab='trips';ui.stack=[];render()},
  'trip-new':()=>tripForm(null),
  'trip-edit':()=>tripForm(byId('trips',cur().id)),
@@ -1455,14 +1610,16 @@ document.addEventListener('change',async e=>{const el=e.target;
     if(f&&f.onch)f.onch(ui.form);if(el.tagName==='SELECT')renderSheet();else if(f&&f.onch){for(const i of document.querySelectorAll('#sheet [data-fk]'))if(i!==el&&i.tagName==='INPUT'&&ui.form[i.dataset.fk]!==undefined)i.value=ui.form[i.dataset.fk]}return}
   if(el.dataset.ch==='month'){if(el.value){ui.month=el.value;render()}return}
   if(el.dataset.photos){const files=[...(el.files||[])];if(!files.length)return;if(!idb)await idbOpen();const k=el.dataset.photos;ui.form[k]=Array.isArray(ui.form[k])?ui.form[k]:[];
-    for(const file of files){const data=await shrink(file);if(!data)continue;const id='ph_'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);await photoPut(id,data);photoCache[id]=data;ui.form[k].push(id)}
+    for(const file of files){const data=await shrink(file);if(!data)continue;const id='ph_'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);await photoPut(id,data);photoCache[id]=data;if(CL.ses)phQueue(id);ui.form[k].push(id)}
     delete ui.errs[k];renderSheet();return}
   if(el.dataset.photo){const file=el.files&&el.files[0];if(!file)return;const data=await shrink(file);if(!data)return;const id='ph_'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
-    if(!idb)await idbOpen();await photoPut(id,data);photoCache[id]=data;ui.form[el.dataset.photo]=id;renderSheet();return}
+    if(!idb)await idbOpen();await photoPut(id,data);photoCache[id]=data;if(CL.ses)phQueue(id);ui.form[el.dataset.photo]=id;renderSheet();return}
   if(el.hasAttribute('data-restore')){const file=el.files&&el.files[0];if(!file)return;try{const j=JSON.parse(await file.text());if(j.app!=='naql'||!j.S||!j.S.trips)throw 0;
     S=j.S;migrate();save();if(j.photos)for(const id in j.photos)if(j.photos[id])await photoPut(id,j.photos[id]);toast(t('import_done'));render()}catch(x){toast(t('import_bad'),'bad')}}});
 
 /* ---------- boot ---------- */
-load();idbOpen().then(()=>render());render();
+clRestore();load();if(CL.on&&!CL.ses)SES=null;CL.ready=!!(CL.ses&&SES&&CL.lastTs);
+idbOpen().then(()=>render());render();
+if(CL.on){if(CL.ses)clStart();else rpc('has_accounts').then(v=>{CL.hasAcc=!!v;render()}).catch(()=>{CL.hasAcc=null;render()})}
 if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script></body></html>
