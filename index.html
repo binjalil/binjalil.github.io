@@ -191,6 +191,15 @@ img[data-act="photo-view"]{cursor:zoom-in}
 .actcode{font-size:2.2rem;font-weight:700;letter-spacing:.3em;text-align:center;padding:14px;border-radius:14px;background:var(--accent-soft);color:var(--accent)}
 a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-content:center}
 .actcode{direction:ltr}
+.picker{position:fixed;inset:0;z-index:80;background:var(--surface);display:flex;flex-direction:column;padding-top:env(safe-area-inset-top)}
+.picker header{display:flex;align-items:center;gap:10px;padding:10px 14px}.picker header h2{margin:0;font-size:1.05rem}
+.pk-search{display:flex;gap:8px;padding:0 14px 10px}.pk-search input{flex:1;min-width:0;font:inherit;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--bg);color:var(--ink)}
+.pk-res{max-height:40vh;overflow:auto;margin:0 14px 10px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.pk-mapwrap{position:relative;flex:1;min-height:200px}#pk-map{position:absolute;inset:0}
+.pk-pin{position:absolute;left:50%;top:50%;transform:translate(-50%,-100%);color:#c0392b;pointer-events:none;z-index:500}.pk-pin svg{width:42px;height:42px;fill:#fff;stroke-width:2.2;filter:drop-shadow(0 2px 3px rgba(0,0,0,.35))}
+.pk-tip{margin:6px 14px 0}.picker footer{display:flex;gap:10px;padding:10px 14px calc(12px + env(safe-area-inset-bottom))}.picker footer .btn{flex:1}
+.leaflet-container{direction:ltr;font:inherit}
+.toast{z-index:90}
 </style></head><body><div id="app"></div><div id="sheet"></div><div id="toast" class="toast" hidden role="status" aria-live="polite"></div>
 <script>// Languages: code, native name, direction
 const LANGS=[['ar','العربية','rtl'],['en','English','ltr'],['ur','اردو','rtl'],['hi','हिन्दी','ltr'],['bn','বাংলা','ltr']];
@@ -613,6 +622,12 @@ loc_getting|جاري تحديد الموقع…|Getting location…|لوکیشن
 loc_denied|تعذّر تحديد الموقع، اسمح بالوصول للموقع أو الصق الرابط|Couldn't get location; allow location access or paste a link|لوکیشن نہیں ملی، اجازت دیں یا لنک پیسٹ کریں|लोकेशन नहीं मिली, अनुमति दें या लिंक पेस्ट करें|লোকেশন পাওয়া যায়নি, অনুমতি দিন বা লিংক দিন
 cost_since|بداية احتساب التكاليف الثابتة|Fixed costs start from|مقررہ اخراجات کا آغاز|स्थिर लागत शुरू|স্থির খরচ শুরু
 cost_since_hint|الشهر اللي تبدأ تنحسب فيه تكاليف الشاحنة الثابتة|Month the truck's fixed costs start counting|وہ مہینہ جب سے ٹرک کے مقررہ اخراجات شمار ہوں|वह महीना जब से ट्रक की स्थिर लागत गिनी जाए|যে মাস থেকে ট্রাকের স্থির খরচ গণনা হবে
+loc_pick|اختر من الخريطة|Pick on map|نقشے سے منتخب کریں|मैप पर चुनें|ম্যাপ থেকে বাছুন
+loc_search_ph|ابحث عن مدينة أو حي أو مكان|Search a city, district or place|شہر، علاقہ یا جگہ تلاش کریں|शहर, इलाका या जगह खोजें|শহর, এলাকা বা জায়গা খুঁজুন
+loc_pick_tip|حرّك الخريطة لين يصير الدبوس على الموقع، ثم اضغط تأكيد|Move the map until the pin is on the spot, then confirm|نقشہ ہلائیں تاکہ پن صحیح جگہ پر ہو، پھر تصدیق کریں|मैप को खिसकाएं ताकि पिन सही जगह हो, फिर पुष्टि करें|পিন সঠিক জায়গায় আনতে ম্যাপ সরান, তারপর নিশ্চিত করুন
+loc_confirm|تأكيد الموقع|Confirm location|لوکیشن کی تصدیق|लोकेशन पुष्टि करें|লোকেশন নিশ্চিত করুন
+loc_map_fail|تعذّر تحميل الخريطة، تأكد من الإنترنت|Couldn't load the map, check your connection|نقشہ لوڈ نہیں ہوا، انٹرنیٹ چیک کریں|मैप लोड नहीं हुआ, इंटरनेट जांचें|ম্যাপ লোড হয়নি, ইন্টারনেট দেখুন
+no_results|لا توجد نتائج|No results|کوئی نتیجہ نہیں|कोई परिणाम नहीं|কোনো ফলাফল নেই
 `;
 const T={};
 for(const line of DICT.trim().split('\n')){const p=line.split('|');T[p[0]]=p.slice(1)}
@@ -814,10 +829,34 @@ function closeSheet(){ui.sheet=null;ui.form={};$('#sheet').innerHTML=''}
 function normLoc(v){v=String(v||'').trim();if(!v)return'';const u=v.match(/https?:\/\/\S+/i);if(u)return u[0];
   const c=v.match(/^(-?\d{1,2}(?:\.\d+)?)\s*[,،]\s*(-?\d{1,3}(?:\.\d+)?)$/);return c?`https://maps.google.com/?q=${c[1]},${c[2]}`:null}
 const locBtn=(v,label)=>v?`<a class="btn ghost sm" href="${esc(v)}" target="_blank" rel="noopener">${IC.pin||''}${esc(label)}</a>`:'';
+// ---- map picker (Leaflet + OpenStreetMap, loaded only when first opened)
+let LF=null;
+function loadLeaflet(){if(LF)return LF;LF=new Promise((ok,bad)=>{const c=document.createElement('link');c.rel='stylesheet';c.href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';document.head.appendChild(c);
+  const j=document.createElement('script');j.src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';j.onload=()=>ok(window.L);j.onerror=()=>{LF=null;bad()};document.head.appendChild(j)});return LF}
+function locLatLng(v){v=String(v||'');const m=v.match(/[?&]q=(-?\d+\.\d+),(-?\d+\.\d+)/)||v.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/)||v.match(/^(-?\d+\.\d+)\s*,\s*(-?\d+\.\d+)$/);return m?[+m[1],+m[2]]:null}
+let PK=null;
+async function openPicker(k){const box=document.createElement('div');box.id='picker';box.className='picker';
+  box.innerHTML=`<header><button class="xbtn" data-act="pk-close" aria-label="${esc(t('close'))}">${IC.x}</button><h2>${esc(t('loc_pick'))}</h2></header>
+   <div class="pk-search"><input id="pk-q" type="search" enterkeyhint="search" placeholder="${esc(t('loc_search_ph'))}"><button class="btn sm" data-act="pk-search">${esc(t('search'))}</button></div>
+   <div id="pk-res" class="pk-res" hidden></div>
+   <div class="pk-mapwrap"><div id="pk-map"></div><div class="pk-pin">${IC.pin}</div></div>
+   <p class="muted xs pk-tip">${esc(t('loc_pick_tip'))}</p>
+   <footer><button class="btn sec" data-act="pk-gps">${esc(t('loc_here'))}</button><button class="btn" data-act="pk-ok">${esc(t('loc_confirm'))}</button></footer>`;
+  document.body.appendChild(box);PK={k,map:null};
+  let L;try{L=await loadLeaflet()}catch(e){closePicker();return toast(t('loc_map_fail'),'bad')}
+  if(!PK)return;const start=locLatLng(ui.form[k]);
+  PK.map=L.map('pk-map',{zoomControl:true,attributionControl:true}).setView(start||[24.7136,46.6753],start?15:6);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(PK.map);
+  setTimeout(()=>PK&&PK.map&&PK.map.invalidateSize(),150)}
+function closePicker(){if(PK&&PK.map)PK.map.remove();PK=null;const b=$('#picker');if(b)b.remove()}
+async function pickerSearch(){const q=(($('#pk-q')||{}).value||'').trim();if(!q||!PK)return;const res=$('#pk-res');res.hidden=false;if(PK.map)setTimeout(()=>PK&&PK.map&&PK.map.invalidateSize(),50);res.innerHTML=`<div class="muted small" style="padding:10px">${esc(t('loc_getting'))}</div>`;
+  try{const r=await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=6&countrycodes=sa,ae,kw,bh,qa,om,jo&accept-language='+(LANG==='ar'?'ar':'en')+'&q='+encodeURIComponent(q));const js=await r.json();
+    res.innerHTML=js.length?js.map(x=>`<button class="item" data-act="pk-go" data-lat="${x.lat}" data-lng="${x.lon}"><span class="t"><b style="white-space:normal">${esc(x.display_name)}</b></span></button>`).join(''):`<div class="muted small" style="padding:10px">${esc(t('no_results'))}</div>`}
+  catch(e){res.innerHTML=`<div class="muted small" style="padding:10px">${esc(t('loc_map_fail'))}</div>`}}
 function fieldHTML(f){const v=ui.form[f.k]??'',err=ui.errs[f.k]?' err':'',lab=`<span>${esc(f.l)}${f.req?' <i>*</i>':''}</span>`,id='f_'+f.k;
   if(f.type==='select')return`<label class="fld${err}${f.full?' full':''}" for="${id}">${lab}<select id="${id}" data-fk="${f.k}">${f.empty!==false?`<option value="">—</option>`:''}${f.opts.map(([a,b])=>`<option value="${esc(a)}" ${String(v)===String(a)?'selected':''}>${esc(b)}</option>`).join('')}</select>${f.hint?`<span class="hint">${esc(f.hint)}</span>`:''}</label>`;
   if(f.type==='loc')return`<div class="fld full${err}">${lab}<input id="${id}" type="url" inputmode="url" dir="ltr" value="${esc(v)}" data-fk="${f.k}" autocomplete="off" placeholder="${esc(t('loc_ph'))}">
-    <div class="row"><button type="button" class="btn sec sm" data-act="loc-here" data-type="${f.k}">${esc(t('loc_here'))}</button>${normLoc(v)?locBtn(normLoc(v),t('open_map')):''}</div>${f.hint?`<span class="hint">${esc(f.hint)}</span>`:''}</div>`;
+    <div class="row"><button type="button" class="btn sm" data-act="loc-pick" data-type="${f.k}">${IC.pin}${esc(t('loc_pick'))}</button><button type="button" class="btn sec sm" data-act="loc-here" data-type="${f.k}">${esc(t('loc_here'))}</button>${normLoc(v)?locBtn(normLoc(v),t('open_map')):''}</div>${f.hint?`<span class="hint">${esc(f.hint)}</span>`:''}</div>`;
   if(f.type==='textarea')return`<label class="fld full${err}" for="${id}">${lab}<textarea id="${id}" data-fk="${f.k}">${esc(v)}</textarea></label>`;
   if(f.type==='photos'){const arr=Array.isArray(v)?v:[];return`<div class="fld full${err}">${lab}<div class="thumbs">${arr.map(id=>`<span class="ph"><img class="thumb" data-ph="${esc(id)}" alt=""><button type="button" class="phx" data-act="ph-del" data-type="${f.k}" data-id="${esc(id)}" aria-label="${esc(t('delete'))}">×</button></span>`).join('')}<label class="thumb addph" role="button">${IC.plus}<input type="file" accept="image/*" multiple data-photos="${f.k}" hidden></label></div></div>`}
   if(f.type==='photo')return`<div class="fld full">${lab}<div class="photo-in">${v?`<img data-ph="${esc(v)}" alt="">`:''}<label class="btn sec sm">${IC.upload}${esc(v?t('change_photo'):t('add_photo'))}<input type="file" accept="image/*" data-photo="${f.k}" hidden></label></div></div>`;
@@ -1317,6 +1356,12 @@ const ACT={
  'act-copy':()=>{const c=ui.actShow&&ui.actShow.code;if(!c)return;try{navigator.clipboard.writeText(c).then(()=>toast(t('copied')),()=>{})}catch(e){}},
  'phone-save':()=>{const v=(($('#mob')||{}).value||'').replace(/\s/g,'');if(!/^05\d{8}$/.test(v)){toast(t('phone_invalid'),'bad');return}
    const a=accountOf(SES);a.phone=v;log(`${t('phone')}: ${a.name}`);save();toast(t('phone_saved'));render()},
+ 'loc-pick':(id,el)=>openPicker(el.dataset.type),
+ 'pk-close':()=>closePicker(),
+ 'pk-search':()=>pickerSearch(),
+ 'pk-go':(id,el)=>{if(!PK||!PK.map)return;$('#pk-res').hidden=true;PK.map.invalidateSize();PK.map.setView([+el.dataset.lat,+el.dataset.lng],15)},
+ 'pk-gps':()=>{if(!navigator.geolocation||!PK||!PK.map)return toast(t('loc_denied'),'bad');toast(t('loc_getting'));navigator.geolocation.getCurrentPosition(p=>{if(PK&&PK.map)PK.map.setView([p.coords.latitude,p.coords.longitude],16);$('#toast').hidden=true},()=>toast(t('loc_denied'),'bad'),{enableHighAccuracy:true,timeout:15000})},
+ 'pk-ok':()=>{if(!PK||!PK.map)return;const c=PK.map.getCenter(),k=PK.k;closePicker();if(!ui.sheet)return;ui.form[k]=`https://maps.google.com/?q=${c.lat.toFixed(6)},${c.lng.toFixed(6)}`;delete ui.errs[k];renderSheet();toast(t('saved'))},
  'loc-here':(id,el)=>{const k=el.dataset.type;if(!navigator.geolocation)return toast(t('loc_denied'),'bad');toast(t('loc_getting'));
    navigator.geolocation.getCurrentPosition(pos=>{if(!ui.sheet)return;ui.form[k]=`https://maps.google.com/?q=${pos.coords.latitude.toFixed(6)},${pos.coords.longitude.toFixed(6)}`;delete ui.errs[k];renderSheet();toast(t('saved'))},()=>toast(t('loc_denied'),'bad'),{enableHighAccuracy:true,timeout:15000})},
  'loc-add':()=>{const p=byId('trips',cur().id);if(!p)return;const own=isDriver()&&p.driverId===SES.id;if(!can('trips')&&!own)return toast(t('not_allowed'),'bad');
@@ -1366,7 +1411,7 @@ const ACT={
 /* ---------- events ---------- */
 document.addEventListener('click',e=>{const el=e.target.closest('[data-act]');if(!el)return;const f=ACT[el.dataset.act];if(!f)return;
   if(el.tagName==='A')e.preventDefault();f(el.dataset.id,el,e)});
-document.addEventListener('keydown',e=>{if(e.key==='Enter'){const id=e.target.id;if(id==='lpw')ACT.login();if(id==='acode')ACT['act-check']();if(id==='npw2')ACT['pw-save']();if(id==='su-pw2')ACT['setup-save']()}
+document.addEventListener('keydown',e=>{if(e.key==='Enter'){const id=e.target.id;if(id==='pk-q'){e.preventDefault();pickerSearch()}if(id==='lpw')ACT.login();if(id==='acode')ACT['act-check']();if(id==='npw2')ACT['pw-save']();if(id==='su-pw2')ACT['setup-save']()}
   if(e.key==='Escape'){if(ui.confirm){ui.confirm=null;render()}else if(ui.sheet)closeSheet()}
   if((e.key==='Enter'||e.key===' ')&&e.target.matches('div[data-act]')){e.preventDefault();e.target.click()}});
 document.addEventListener('input',e=>{const el=e.target;
