@@ -200,6 +200,9 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-conten
 .pk-tip{margin:6px 14px 0}.picker footer{display:flex;gap:10px;padding:10px 14px calc(12px + env(safe-area-inset-bottom))}.picker footer .btn{flex:1}
 .leaflet-container{direction:ltr;font:inherit}
 .toast{z-index:90}
+.deptsel{display:inline-flex;align-items:center;gap:6px;margin-inline-start:auto;background:rgba(255,255,255,.14);color:inherit;border-radius:999px;padding:6px 12px;font-size:.85rem;font-weight:600;white-space:nowrap;max-width:46vw}
+.deptsel svg{width:16px;height:16px;flex:none}.deptsel select{appearance:none;-webkit-appearance:none;background:transparent;border:0;color:inherit;font:inherit;padding:0;max-width:36vw;text-overflow:ellipsis}
+.deptsel select option{color:#111}
 </style></head><body><div id="app"></div><div id="sheet"></div><div id="toast" class="toast" hidden role="status" aria-live="polite"></div>
 <script>// Languages: code, native name, direction
 const LANGS=[['ar','العربية','rtl'],['en','English','ltr'],['ur','اردو','rtl'],['hi','हिन्दी','ltr'],['bn','বাংলা','ltr']];
@@ -521,7 +524,7 @@ phone_invalid|رقم الجوال لازم يكون 10 أرقام ويبدأ ب�
 phone_saved|تم حفظ رقم الجوال|Mobile number saved|موبائل نمبر محفوظ ہو گیا|मोबाइल नंबर सहेजा गया|মোবাইল নম্বর সংরক্ষিত
 continue|متابعة|Continue|جاری رکھیں|जारी रखें|চালিয়ে যান
 role_driver|السائق|Driver|ڈرائیور|ड्राइवर|চালক
-users_note|كل مستخدم يدخل برقم هويته أو إقامته ورقم جواله، ويوصله رمز تحقق. السائقين تضيفهم من الأسطول ← السائقين.|Each user signs in with their ID or Iqama number and mobile, then gets a verification code. Add drivers under Fleet → Drivers.|ہر صارف شناختی یا اقامہ نمبر اور موبائل سے داخل ہوتا ہے اور تصدیقی کوڈ آتا ہے۔ ڈرائیور بیڑا ← ڈرائیور سے شامل کریں۔|हर उपयोगकर्ता आईडी या इकामा नंबर और मोबाइल से लॉग इन करता है, फिर सत्यापन कोड आता है। ड्राइवर बेड़ा → ड्राइवर से जोड़ें।|প্রত্যেকে আইডি বা ইকামা নম্বর ও মোবাইল দিয়ে ঢোকে, তারপর যাচাই কোড আসে। চালক যোগ করুন বহর → চালক থেকে।
+users_note|بعد الحفظ يطلع رمز تفعيل ترسله للموظف، يدخل فيه أول مرة ويختار كلمة مروره. وحدد القسم اللي يشوف بياناته. السائقين تضيفهم من الأسطول ← السائقين.|After saving, an activation code appears to send to the employee for first login. Choose which department they can see. Add drivers under Fleet → Drivers.|محفوظ کرنے کے بعد ایکٹیویشن کوڈ ملازم کو بھیجیں۔ وہ شعبہ منتخب کریں جو وہ دیکھ سکے۔ ڈرائیور بیڑا ← ڈرائیور سے شامل کریں۔|सहेजने के बाद सक्रियण कोड कर्मचारी को भेजें। वह विभाग चुनें जिसे वह देख सके। ड्राइवर बेड़ा → ड्राइवर से जोड़ें।|সেভ করার পর অ্যাক্টিভেশন কোড কর্মীকে পাঠান। কোন বিভাগ দেখবে তা বেছে নিন। চালক যোগ করুন বহর → চালক থেকে।
 st_sent|أُرسلت للسائق|Sent to driver|ڈرائیور کو بھیجا|ड्राइवर को भेजा|চালককে পাঠানো
 st_accepted|قبلها السائق|Accepted|ڈرائیور نے قبول کیا|ड्राइवर ने स्वीकार किया|চালক গ্রহণ করেছে
 act_send|إرسال للسائق|Send to driver|ڈرائیور کو بھیجیں|ड्राइवर को भेजें|চালককে পাঠান
@@ -628,6 +631,13 @@ loc_pick_tip|حرّك الخريطة لين يصير الدبوس على الم�
 loc_confirm|تأكيد الموقع|Confirm location|لوکیشن کی تصدیق|लोकेशन पुष्टि करें|লোকেশন নিশ্চিত করুন
 loc_map_fail|تعذّر تحميل الخريطة، تأكد من الإنترنت|Couldn't load the map, check your connection|نقشہ لوڈ نہیں ہوا، انٹرنیٹ چیک کریں|मैप लोड नहीं हुआ, इंटरनेट जांचें|ম্যাপ লোড হয়নি, ইন্টারনেট দেখুন
 no_results|لا توجد نتائج|No results|کوئی نتیجہ نہیں|कोई परिणाम नहीं|কোনো ফলাফল নেই
+dept|القسم|Department|شعبہ|विभाग|বিভাগ
+depts|الأقسام|Departments|شعبے|विभाग|বিভাগসমূহ
+all_depts|كل الأقسام|All departments|تمام شعبے|सभी विभाग|সব বিভাগ
+new_dept|قسم جديد|New department|نیا شعبہ|नया विभाग|নতুন বিভাগ
+dept_access|القسم المسموح له|Department access|رسائی والا شعبہ|विभाग पहुंच|বিভাগ অ্যাক্সেস
+dept_access_hint|يشوف بيانات هذا القسم بس. «كل الأقسام» صلاحية يعطيها المدير.|Sees only this department's data. "All departments" is granted by the manager.|صرف اسی شعبے کا ڈیٹا دیکھے گا۔|केवल इसी विभाग का डेटा देखेगा।|শুধু এই বিভাগের ডেটা দেখবে।
+dept_not_empty|ما تقدر تحذف القسم وفيه بيانات أو موظفين، انقلهم أول|Can't delete a department that still has data or staff|ڈیٹا یا عملے والا شعبہ حذف نہیں ہو سکتا|डेटा या स्टाफ वाला विभाग नहीं हटा सकते|ডেটা বা কর্মী থাকা বিভাগ মুছা যাবে না
 `;
 const T={};
 for(const line of DICT.trim().split('\n')){const p=line.split('|');T[p[0]]=p.slice(1)}
@@ -718,6 +728,9 @@ function migrate(){let ch=false;const ids={u1:'1012345678',u2:'1023456789',u3:'2
   for(const u of S.users){if(!u.idNo){u.idNo=ids[u.id]||'';ch=true}if(u.phone===undefined){u.phone='';ch=true}}
   for(const d of S.drivers){if(!d.pin){d.pin='1234';ch=true}}
   for(const p of S.trips){if(p.status==='scheduled'){p.status='accepted';ch=true}if(!p.events){p.events=[];ch=true}for(const k of['loadDocs','cargoPhotos','unloadDocs'])if(!p[k]){p[k]=[];ch=true}}
+  if(!S.depts||!S.depts.length){S.depts=DEPTS0.map(d=>({...d}));ch=true}
+  for(const c of['trips','trucks','drivers','clients','routes'])for(const x of S[c])if(!x.dept){x.dept=S.depts[0].id;ch=true}
+  for(const u of S.users)if(u.role!=='manager'&&!u.dept){u.dept=S.depts[0].id;ch=true}
   const oldest=S.log.length?monthOf(S.log[S.log.length-1].at):curMonth();
   for(const x of S.trucks)if(!x.since){const e=S.log.find(l=>l.msg&&l.msg.startsWith('+ ')&&l.msg.endsWith(' '+x.plate));x.since=e?monthOf(e.at):oldest;ch=true}
   if(ch)save()}
@@ -726,7 +739,7 @@ function accountOf(ses){if(!ses)return null;return ses.role==='driver'?S.drivers
 const idKind=n=>/^1\d{9}$/.test(n)?'national_id':/^2\d{9}$/.test(n)?'iqama':null;
 function idTaken(n,exceptId){return S.users.some(u=>u.idNo===n&&u.id!==exceptId)||S.drivers.some(d=>d.idNo===n&&d.id!==exceptId)}
 const SETTINGS0={company:'مؤسسة بن جليل للنقليات',cr:'',vatNo:'',address:'',phone:'',vat:15,alertDays:30,dieselPrice:1.66};
-function emptyState(settings,users){return{v:2,clean2:true,seq:1000,settings:Object.assign({},SETTINGS0,settings||{}),users:users||[],trucks:[],drivers:[],driverTx:[],tyres:[],clients:[],routes:[],trips:[],fixed:[],log:[]}}
+function emptyState(settings,users){return{v:2,clean2:true,seq:1000,settings:Object.assign({},SETTINGS0,settings||{}),users:users||[],trucks:[],drivers:[],driverTx:[],tyres:[],clients:[],routes:[],trips:[],fixed:[],log:[],depts:DEPTS0.map(d=>({...d}))}}
 function clearPhotos(){try{if(idb)idb.transaction('p','readwrite').objectStore('p').clear();else indexedDB.deleteDatabase('naql-photos')}catch(e){}}
 async function hashPw(pw,salt){const enc=new TextEncoder();
   if(!(window.crypto&&crypto.subtle)){let h=0;for(const c of salt+pw)h=(h*31+c.charCodeAt(0))|0;return 'w'+h}
@@ -761,6 +774,16 @@ const P={
 };
 const isDriver=()=>!!SES&&SES.role==='driver';
 const isMgr=()=>!!SES&&SES.role==='manager';
+// ---- departments: every truck/driver/client/route/trip belongs to one; managers (or users given "all") see every department
+const DEPTS0=[{id:'d1',name:'القسم الأول'},{id:'d2',name:'القسم الثاني'}];
+const depts=()=>S.depts&&S.depts.length?S.depts:DEPTS0;
+const deptName=id=>id==='all'?t('all_depts'):((depts().find(d=>d.id===id)||{}).name||'—');
+function canAll(){if(!SES)return false;if(isMgr())return true;const a=accountOf(SES);return !!a&&a.dept==='all'}
+function scope(){if(!SES||SES.role==='driver')return'all';if(canAll()){const d=PREFS.dept||'all';return d==='all'||depts().some(x=>x.id===d)?d:'all'}const a=accountOf(SES);return a&&a.dept?a.dept:depts()[0].id}
+const defDept=()=>{const sc=scope();return sc==='all'?depts()[0].id:sc};
+const inScope=x=>{const sc=scope();return sc==='all'||(x.dept||depts()[0].id)===sc};
+const DS={};for(const c of['trips','trucks','drivers','clients','routes'])Object.defineProperty(DS,c,{get:()=>scope()==='all'?S[c]:S[c].filter(inScope)});
+const deptFld=()=>scope()==='all'?[{k:'dept',l:t('dept'),type:'select',opts:depts().map(d=>[d.id,d.name]),empty:false,full:true}]:[];
 const can=a=>!!SES&&(P[SES.role].includes('*')||P[SES.role].includes(a));
 function guard(a){if(can(a))return true;toast(t('not_allowed'),'bad');return false}
 
@@ -773,31 +796,31 @@ const tripDue=p=>r2(tripTotal(p)-tripPaid(p));
 const isLive=p=>p.status!=='cancelled';
 function payState(p){if(p.status!=='delivered')return null;if(p.confirmed)return 'pay_confirmed';const pd=tripPaid(p);if(pd<=0)return 'pay_unpaid';if(pd<tripTotal(p)-.01)return 'pay_partial';return 'pay_paid'}
 const truckDrivers=id=>S.drivers.filter(d=>d.truckId===id&&d.status!=='ds_left');
-const activeTrucks=()=>S.trucks.filter(x=>x.status!=='ts_stopped');
+const activeTrucks=()=>DS.trucks.filter(x=>x.status!=='ts_stopped');
 function truckAutoFixed(trk){return r2((+trk.insAnnual||0)/12+(trk.own==='own_loan'?(+trk.installment||0):0)+sum(truckDrivers(trk.id),d=>(+d.salary||0)+(+d.allow||0)))}
 // fixed costs are charged as the full monthly amount (owner's choice)
 const monthFactor=m=>1;
-function truckFixed(id,m){const trk=byId('trucks',id);if(!trk)return 0;const n=Math.max(1,activeTrucks().length);
+function truckFixed(id,m){const trk=byId('trucks',id);if(!trk)return 0;const n=Math.max(1,S.trucks.filter(x=>x.status!=='ts_stopped').length);
   return r2(monthFactor(m)*((!trk.since||m>=trk.since?truckAutoFixed(trk):0)+sum(S.fixed.filter(f=>f.month===m&&f.truckId===id),f=>f.amount)+sum(S.fixed.filter(f=>f.month===m&&!f.truckId),f=>f.amount)/n))}
-function monthFixed(m){return r2(sum(S.trucks.filter(x=>x.status!=='ts_stopped'||S.fixed.some(f=>f.truckId===x.id&&f.month===m)),x=>truckFixed(x.id,m)))}
-const tripsIn=(m,f)=>S.trips.filter(p=>isLive(p)&&monthOf(p.loadDate)===m&&(!f||f(p)));
+function monthFixed(m){return r2(sum(DS.trucks.filter(x=>x.status!=='ts_stopped'||S.fixed.some(f=>f.truckId===x.id&&f.month===m)),x=>truckFixed(x.id,m)))}
+const tripsIn=(m,f)=>DS.trips.filter(p=>isLive(p)&&monthOf(p.loadDate)===m&&(!f||f(p)));
 function fixedShare(p){if(!p.truckId||!isLive(p))return 0;const m=monthOf(p.loadDate);const n=tripsIn(m,x=>x.truckId===p.truckId).length;return n?r2(truckFixed(p.truckId,m)/n):0}
 const tripProfit=p=>r2(p.price-tripExp(p)-fixedShare(p));
 const tripKm=p=>(+p.odoEnd>0&&+p.odoStart>=0&&+p.odoEnd>=+p.odoStart)?(+p.odoEnd-+p.odoStart):0;
-const clientBalance=id=>r2(sum(S.trips.filter(p=>p.clientId===id&&p.status==='delivered'),tripDue));
+const clientBalance=id=>r2(sum(DS.trips.filter(p=>p.clientId===id&&p.status==='delivered'),tripDue));
 function dueDateOf(p){const c=byId('clients',p.clientId);const base=(p.arrive||p.loadDate||'').slice(0,10);return addDays(base,c&&c.terms==='t_credit'?(+c.days||0):3)}
 function monthStats(m){const ps=tripsIn(m);const rev=sum(ps,p=>p.price),vexp=sum(ps,tripExp),fx=monthFixed(m);return{trips:ps.length,rev:r2(rev),vexp:r2(vexp),fixed:fx,net:r2(rev-vexp-fx)}}
 
 /* ---------- alerts ---------- */
 function alerts(){const out=[],T0=today(),lim=+S.settings.alertDays||30;
   const docTxt=d=>{const n=daysBetween(T0,d);return n<0?t('expired'):t('expires_in',{n})};
-  for(const trk of S.trucks){if(trk.status==='ts_stopped')continue;
+  for(const trk of DS.trucks){if(trk.status==='ts_stopped')continue;
     for(const k of ['istimara','insurance','inspection','opcard']){const d=trk.docs&&trk.docs[k];if(d&&daysBetween(T0,d)<=lim)out.push({lvl:daysBetween(T0,d)<0?'bad':'warn',txt:t('al_doc',{doc:t(k),p:trk.plate,d:docTxt(d)}),go:['truck',trk.id],sort:daysBetween(T0,d)})}
     if(+trk.serviceEvery&&(+trk.odo-(+trk.lastService||0))>=+trk.serviceEvery-500)out.push({lvl:'warn',txt:t('al_service',{p:trk.plate}),go:['truck',trk.id],sort:5})}
-  for(const d of S.drivers){if(d.status==='ds_left')continue;for(const[k,f]of[['id_exp','idExp'],['lic_exp','licExp']]){const x=d[f];if(x&&daysBetween(T0,x)<=lim)out.push({lvl:daysBetween(T0,x)<0?'bad':'warn',txt:t('al_driver',{doc:t(k),n:d.name,d:docTxt(x)}),go:['driver',d.id],sort:daysBetween(T0,x)})}}
-  for(const c of S.clients){const late=S.trips.filter(p=>p.clientId===c.id&&p.status==='delivered'&&tripDue(p)>.01&&dueDateOf(p)<T0);if(late.length)out.push({lvl:'bad',txt:t('al_overdue',{c:c.name,a:moneyT(sum(late,tripDue))}),go:['client',c.id],sort:-50});
+  for(const d of DS.drivers){if(d.status==='ds_left')continue;for(const[k,f]of[['id_exp','idExp'],['lic_exp','licExp']]){const x=d[f];if(x&&daysBetween(T0,x)<=lim)out.push({lvl:daysBetween(T0,x)<0?'bad':'warn',txt:t('al_driver',{doc:t(k),n:d.name,d:docTxt(x)}),go:['driver',d.id],sort:daysBetween(T0,x)})}}
+  for(const c of DS.clients){const late=DS.trips.filter(p=>p.clientId===c.id&&p.status==='delivered'&&tripDue(p)>.01&&dueDateOf(p)<T0);if(late.length)out.push({lvl:'bad',txt:t('al_overdue',{c:c.name,a:moneyT(sum(late,tripDue))}),go:['client',c.id],sort:-50});
     if(+c.limit&&clientBalance(c.id)>+c.limit)out.push({lvl:'bad',txt:t('al_limit',{c:c.name}),go:['client',c.id],sort:-40})}
-  for(const p of S.trips){if(!isLive(p))continue;const rt=byId('routes',p.routeId);
+  for(const p of DS.trips){if(!isLive(p))continue;const rt=byId('routes',p.routeId);
     if(rt&&p.status!=='new'){const used=sum(p.expenses.filter(e=>e.type==='ex_diesel'||e.type==='ex_driver'),e=>e.amount);if(used>((+rt.diesel||0)+(+rt.driver||0))*1.2&&daysBetween(p.loadDate,T0)<=45)out.push({lvl:'warn',txt:t('al_highcost',{n:p.no}),go:['trip',p.id],sort:10})}
     if(p.status==='new'&&p.lastReject)out.push({lvl:'bad',txt:t('al_rejected',{n:p.no}),go:['trip',p.id],sort:-60});
     if(p.status==='sent'){const ev=(p.events||[]).filter(e=>e.type==='sent').pop();if(ev&&(Date.now()-new Date(ev.at))>2*3600e3)out.push({lvl:'warn',txt:t('al_waiting',{n:p.no}),go:['trip',p.id],sort:-5})}
@@ -890,29 +913,29 @@ function gone(){ui.stack.pop();const s=cur();return s?V[s.type](s.id):V[ui.tab](
 
 /* ---------- forms ---------- */
 const opt=(arr,lf)=>arr.map(x=>[x.id,lf(x)]);
-const truckOpts=()=>opt(S.trucks.filter(x=>x.status!=='ts_stopped'),x=>x.plate+' · '+x.make);
-const driverOpts=()=>opt(S.drivers.filter(x=>x.status==='ds_active'),x=>x.name);
+const truckOpts=()=>opt(DS.trucks.filter(x=>x.status!=='ts_stopped'),x=>x.plate+(x.make?' · '+x.make:''));
+const driverOpts=()=>opt(DS.drivers.filter(x=>x.status==='ds_active'),x=>x.name);
 const keyOpts=keys=>keys.map(k=>[k,t(k)]);
 
-function tripForm(p){if(!guard('trips'))return;const isNew=!p;if(isNew&&!S.clients.length){toast(t('need_client'),'bad');return clientForm(null)}const prevDriver=p&&p.driverId;
+function tripForm(p){if(!guard('trips'))return;const isNew=!p;if(isNew&&!DS.clients.length){toast(t('need_client'),'bad');return clientForm(null)}const prevDriver=p&&p.driverId;
   openForm({title:t(isNew?'new_trip':'edit_trip'),values:p?{...p}:{loadDate:today(),vat:S.settings.vat},
    intro:isNew?t('send_hint'):'',
    fields:[
-    {k:'clientId',l:t('client'),type:'select',opts:opt(S.clients,c=>c.name),req:true,full:true},
-    {k:'routeId',l:t('route_pick'),type:'select',opts:opt(S.routes,r=>`${r.from} ${arrow()} ${r.to}`),full:true,onch:f=>{const r=byId('routes',f.routeId);if(r){f.from=r.from;f.to=r.to;f.price=r.price}}},
+    {k:'clientId',l:t('client'),type:'select',opts:opt(DS.clients,c=>c.name),req:true,full:true},
+    {k:'routeId',l:t('route_pick'),type:'select',opts:opt(DS.routes,r=>`${r.from} ${arrow()} ${r.to}`),full:true,onch:f=>{const r=byId('routes',f.routeId);if(r){f.from=r.from;f.to=r.to;f.price=r.price}}},
     {k:'from',l:t('from'),req:true},{k:'to',l:t('to'),req:true},
     {k:'loadLoc',l:t('load_loc'),type:'loc',req:isNew},
     {k:'unloadLoc',l:t('unload_loc'),type:'loc',hint:t('loc_later')},
     {k:'cargo',l:t('cargo')},{k:'weight',l:t('weight'),type:'number',min:0},
     {k:'loadDate',l:t('load_date'),type:'date',req:true},{k:'price',l:t('price'),type:'number',req:true,min:0},
-    {k:'driverId',l:t('driver'),type:'select',opts:driverOpts(),hint:S.drivers.length?'':t('no_drivers_hint'),onch:f=>{const d=byId('drivers',f.driverId);if(d&&d.truckId)f.truckId=d.truckId}},
+    {k:'driverId',l:t('driver'),type:'select',opts:driverOpts(),hint:DS.drivers.length?'':t('no_drivers_hint'),onch:f=>{const d=byId('drivers',f.driverId);if(d&&d.truckId)f.truckId=d.truckId}},
     {k:'truckId',l:t('truck'),type:'select',opts:truckOpts()},
     {k:'bayan',l:t('bayan'),full:true},{k:'notes',l:t('notes'),type:'textarea'}],
    onSave:v=>{if(v.driverId&&!v.truckId)return t('need_truck_driver');
-     if(isNew){const no=++S.seq;const np={id:'p'+no,no,...v,vat:+S.settings.vat,status:'new',depart:'',arrive:'',odoStart:'',odoEnd:'',expenses:[],payments:[],confirmed:null,created:today(),events:[],loadDocs:[],cargoPhotos:[],unloadDocs:[]};
+     if(isNew){const no=++S.seq;const np={id:'p'+no,no,...v,dept:(byId('trucks',v.truckId)||{}).dept||defDept(),vat:+S.settings.vat,status:'new',depart:'',arrive:'',odoStart:'',odoEnd:'',expenses:[],payments:[],confirmed:null,created:today(),events:[],loadDocs:[],cargoPhotos:[],unloadDocs:[]};
        addEv(np,'created');if(np.driverId){np.status='sent';addEv(np,'sent',{n:driverName(np.driverId)})}
        S.trips.push(np);log(`+ ${t('trip')} ${no}`);ui.stack=[{type:'trip',id:np.id}];ui.tab='trips'}
-     else{Object.assign(p,v);if(v.driverId&&v.driverId!==prevDriver&&['new','sent','accepted'].includes(p.status)){p.status='sent';p.lastReject='';addEv(p,'sent',{n:driverName(v.driverId)})}
+     else{Object.assign(p,v);{const tk=byId('trucks',p.truckId);if(tk&&tk.dept)p.dept=tk.dept}if(v.driverId&&v.driverId!==prevDriver&&['new','sent','accepted'].includes(p.status)){p.status='sent';p.lastReject='';addEv(p,'sent',{n:driverName(v.driverId)})}
        if(!v.driverId&&['sent','accepted'].includes(p.status))p.status='new';log(`${t('edit_trip')} ${p.no}`)}}})}
 
 function expenseForm(p,e){const own=isDriver()&&p.driverId===SES.id;if(!can('expenses')&&!own)return toast(t('not_allowed'),'bad');if(p.confirmed&&!isMgr())return toast(t('locked_note'),'bad');
@@ -945,7 +968,7 @@ function paymentForm(p,y){if(!guard('pay'))return;if(p.confirmed&&!isMgr())retur
 function truckForm(x){if(!guard('fleet'))return;const isNew=!x;
   const v=x?{...x,...Object.fromEntries(Object.entries(x.docs||{}).map(([k,d])=>['doc_'+k,d]))}:{trailer:'tr_flat',own:'own_cash',status:'ts_available',serviceEvery:10000,since:curMonth()};
   openForm({title:isNew?t('new_truck'):x.plate,values:v,del:!isNew&&can('*'),
-   fields:[{k:'plate',l:t('plate'),req:true},{k:'make',l:t('make')},{k:'model',l:t('model')},{k:'year',l:t('year'),type:'number'},{k:'vin',l:t('vin'),full:true},
+   fields:[...deptFld(),{k:'plate',l:t('plate'),req:true},{k:'make',l:t('make')},{k:'model',l:t('model')},{k:'year',l:t('year'),type:'number'},{k:'vin',l:t('vin'),full:true},
     {k:'trailer',l:t('trailer'),type:'select',opts:keyOpts(['tr_flat','tr_curtain','tr_reefer','tr_tipper','tr_tanker']),empty:false},{k:'cap',l:t('capacity'),type:'number',min:0},
     {k:'odo',l:t('odometer'),type:'number',min:0,req:true},{k:'status',l:t('status'),type:'select',opts:keyOpts(['ts_available','ts_trip','ts_maint','ts_stopped']),empty:false},
     {k:'doc_istimara',l:t('istimara')+' · '+t('expiry'),type:'date'},{k:'doc_insurance',l:t('insurance')+' · '+t('expiry'),type:'date'},
@@ -955,43 +978,43 @@ function truckForm(x){if(!guard('fleet'))return;const isNew=!x;
     {k:'serviceEvery',l:t('service_every'),type:'number',min:0},{k:'lastService',l:t('last_service'),type:'number',min:0}],
    onDel:()=>{if(S.trips.some(p=>p.truckId===x.id))return t('not_allowed');S.trucks=S.trucks.filter(y=>y.id!==x.id);ui.stack=[]},
    onSave:v=>{const docs={};for(const k of['istimara','insurance','inspection','opcard']){docs[k]=v['doc_'+k]||'';delete v['doc_'+k]}
-     if(isNew){const n={id:uid('t'),...v,docs};if(n.lastService==='')n.lastService=n.odo;S.trucks.push(n);log(`+ ${t('truck')} ${n.plate}`)}else{Object.assign(x,v,{docs});log(`${t('edit')} ${t('truck')} ${x.plate}`)}}})}
+     if(isNew){const n={id:uid('t'),dept:defDept(),...v,docs};if(n.lastService==='')n.lastService=n.odo;S.trucks.push(n);log(`+ ${t('truck')} ${n.plate}`)}else{Object.assign(x,v,{docs});log(`${t('edit')} ${t('truck')} ${x.plate}`)}}})}
 
 function accBox(a,type){return`<div class="note spread"><span>${esc(t('login_state'))}: ${pill(accState(a),a.pwHash?'good':'warn')}</span><button class="btn ghost sm" data-act="acc-reset" data-type="${type}" data-id="${a.id}">${esc(t('reset_login'))}</button></div>`}
 function driverForm(x){if(!guard('fleet'))return;const isNew=!x;
   openForm({title:isNew?t('new_driver'):x.name,extra:x?()=>accBox(x,'drivers'):null,values:x?{...x}:{mode:'em_trip',status:'ds_active'},del:!isNew&&can('*'),
-   fields:[{k:'name',l:t('name'),req:true,full:true},{k:'idNo',l:t('id_or_iqama'),req:true,type:'tel'},{k:'phone',l:t('phone'),type:'tel',req:true},{k:'idExp',l:t('id_exp'),type:'date'},{k:'licExp',l:t('lic_exp'),type:'date'},
+   fields:[...deptFld(),{k:'name',l:t('name'),req:true,full:true},{k:'idNo',l:t('id_or_iqama'),req:true,type:'tel'},{k:'phone',l:t('phone'),type:'tel',req:true},{k:'idExp',l:t('id_exp'),type:'date'},{k:'licExp',l:t('lic_exp'),type:'date'},
     {k:'salary',l:t('salary'),type:'number',min:0},{k:'allow',l:t('allowances'),type:'number',min:0},
     {k:'mode',l:t('exp_mode'),type:'select',opts:keyOpts(['em_trip','em_day','em_km']),empty:false},{k:'rate',l:t('exp_rate'),type:'number',min:0},
-    {k:'truckId',l:t('assigned_truck'),type:'select',opts:opt(S.trucks,x=>x.plate)},{k:'status',l:t('status'),type:'select',opts:keyOpts(['ds_active','ds_leave','ds_left']),empty:false}],
+    {k:'truckId',l:t('assigned_truck'),type:'select',opts:opt(DS.trucks,x=>x.plate)},{k:'status',l:t('status'),type:'select',opts:keyOpts(['ds_active','ds_leave','ds_left']),empty:false}],
    onDel:()=>{if(S.trips.some(p=>p.driverId===x.id))return t('not_allowed');S.drivers=S.drivers.filter(y=>y.id!==x.id);ui.stack=[]},
-   onSave:v=>{v.idNo=String(v.idNo).replace(/\D/g,'');v.phone=normPhone(v.phone);if(!idKind(v.idNo))return t('id_invalid');if(idTaken(v.idNo,x&&x.id))return t('id_taken');if(!/^05\d{8}$/.test(v.phone))return t('phone_invalid');if(isNew){const d={id:uid('d'),...v};S.drivers.push(d);showAct(d);log(`+ ${t('driver')} ${v.name}`)}else Object.assign(x,v)}})}
+   onSave:v=>{v.idNo=String(v.idNo).replace(/\D/g,'');v.phone=normPhone(v.phone);if(!idKind(v.idNo))return t('id_invalid');if(idTaken(v.idNo,x&&x.id))return t('id_taken');if(!/^05\d{8}$/.test(v.phone))return t('phone_invalid');if(isNew){const d={id:uid('d'),dept:defDept(),...v};S.drivers.push(d);showAct(d);log(`+ ${t('driver')} ${v.name}`)}else Object.assign(x,v)}})}
 
 function tyreForm(x,truckId){if(!guard('fleet'))return;
   openForm({title:x?t('tyre'):t('new_tyre'),values:x?{...x}:{truckId:truckId||'',date:today(),status:'ty_ok',odo:truckId?byId('trucks',truckId).odo:''},del:!!x,
-   fields:[{k:'truckId',l:t('truck'),type:'select',opts:opt(S.trucks,x=>x.plate),req:true,full:true},{k:'pos',l:t('position'),req:true},{k:'brand',l:t('brand')},{k:'size',l:t('size')},{k:'price',l:t('amount'),type:'number',min:0},
+   fields:[{k:'truckId',l:t('truck'),type:'select',opts:opt(DS.trucks,x=>x.plate),req:true,full:true},{k:'pos',l:t('position'),req:true},{k:'brand',l:t('brand')},{k:'size',l:t('size')},{k:'price',l:t('amount'),type:'number',min:0},
     {k:'date',l:t('install_date'),type:'date'},{k:'odo',l:t('install_odo'),type:'number',min:0},{k:'status',l:t('status'),type:'select',opts:keyOpts(['ty_ok','ty_repaired','ty_replaced']),empty:false}],
    onDel:()=>{S.tyres=S.tyres.filter(y=>y.id!==x.id)},
    onSave:v=>{if(x)Object.assign(x,v);else S.tyres.push({id:uid('y'),...v})}})}
 
 function clientForm(x){if(!can('clients')&&!can('clientsAdd'))return toast(t('not_allowed'),'bad');if(x&&!can('clients'))return toast(t('not_allowed'),'bad');const isNew=!x;
   openForm({title:isNew?t('new_client'):x.name,values:x?{...x}:{terms:'t_cash',days:0},del:!isNew&&can('*'),
-   fields:[{k:'name',l:t('name'),req:true,full:true},{k:'cr',l:t('cr')},{k:'vatNo',l:t('vat_no')},{k:'contact',l:t('contact')},{k:'phone',l:t('phone'),type:'tel'},{k:'address',l:t('address'),full:true},
+   fields:[...deptFld(),{k:'name',l:t('name'),req:true,full:true},{k:'cr',l:t('cr')},{k:'vatNo',l:t('vat_no')},{k:'contact',l:t('contact')},{k:'phone',l:t('phone'),type:'tel'},{k:'address',l:t('address'),full:true},
     {k:'terms',l:t('terms'),type:'select',opts:keyOpts(['t_cash','t_credit']),empty:false},{k:'days',l:t('credit_days'),type:'number',min:0,show:f=>f.terms==='t_credit'},{k:'limit',l:t('credit_limit'),type:'number',min:0,show:f=>f.terms==='t_credit'}],
    onDel:()=>{if(S.trips.some(p=>p.clientId===x.id))return t('not_allowed');S.clients=S.clients.filter(y=>y.id!==x.id);ui.stack=[]},
-   onSave:v=>{if(isNew){S.clients.push({id:uid('c'),...v});log(`+ ${t('client')} ${v.name}`)}else Object.assign(x,v)}})}
+   onSave:v=>{if(isNew){S.clients.push({id:uid('c'),dept:defDept(),...v});log(`+ ${t('client')} ${v.name}`)}else Object.assign(x,v)}})}
 
 function routeForm(x){if(!guard('routes'))return;
   openForm({title:x?`${x.from} - ${x.to}`:t('new_route'),values:x?{...x}:{},del:!!x,
-   fields:[{k:'from',l:t('from'),req:true},{k:'to',l:t('to'),req:true},{k:'km',l:t('route_km'),type:'number',min:0},{k:'price',l:t('usual_price'),type:'number',min:0},{k:'diesel',l:t('usual_diesel'),type:'number',min:0},{k:'driver',l:t('usual_driver'),type:'number',min:0}],
+   fields:[...deptFld(),{k:'from',l:t('from'),req:true},{k:'to',l:t('to'),req:true},{k:'km',l:t('route_km'),type:'number',min:0},{k:'price',l:t('usual_price'),type:'number',min:0},{k:'diesel',l:t('usual_diesel'),type:'number',min:0},{k:'driver',l:t('usual_driver'),type:'number',min:0}],
    onDel:()=>{S.routes=S.routes.filter(y=>y.id!==x.id)},
-   onSave:v=>{if(x)Object.assign(x,v);else S.routes.push({id:uid('r'),...v})}})}
+   onSave:v=>{if(x)Object.assign(x,v);else S.routes.push({id:uid('r'),dept:defDept(),...v})}})}
 
 function fixedForm(x){if(!guard('fixed'))return;
   openForm({title:x?t(x.cat):t('new_fixed'),values:x?{...x}:{month:ui.month,cat:'fc_salaries',truckId:''},del:!!x,
    fields:[{k:'cat',l:t('category'),type:'select',opts:keyOpts(['fc_salaries','fc_rent','fc_telecom','fc_service','fc_tyres','fc_renewal','fc_other']),empty:false,full:true},
     {k:'month',l:t('month'),type:'month',req:true},{k:'amount',l:t('amount')+' ('+t('sar')+')',type:'number',req:true,min:0},
-    {k:'truckId',l:t('applies_to'),type:'select',opts:[['',t('general')],...opt(S.trucks,x=>x.plate)],empty:false,full:true},{k:'note',l:t('notes'),full:true}],
+    {k:'truckId',l:t('applies_to'),type:'select',opts:[['',t('general')],...opt(DS.trucks,x=>x.plate)],empty:false,full:true},{k:'note',l:t('notes'),full:true}],
    onDel:()=>{S.fixed=S.fixed.filter(y=>y.id!==x.id)},
    onSave:v=>{if(x)Object.assign(x,v);else S.fixed.push({id:uid('f'),...v});log(`${t('fixed_costs')} ${t(v.cat)} ${moneyT(v.amount)}`)}})}
 
@@ -1001,10 +1024,10 @@ function custodyForm(d){if(!can('pay')&&!can('fleet'))return toast(t('not_allowe
    onSave:v=>{S.driverTx.push({id:uid('x'),driverId:d.id,...v});log(`${t(v.type==='advance'?'advance':'settle')} ${d.name} ${moneyT(v.amount)}`)}})}
 
 function userForm(x){if(!guard('*'))return;
-  openForm({title:x?x.name:t('new_user'),values:x?{...x}:{role:'dispatcher'},del:!!x,extra:x&&x.id!==SES.id?()=>accBox(x,'users'):null,
+  openForm({title:x?x.name:t('new_user'),values:x?{dept:depts()[0].id,...x}:{role:'dispatcher',dept:defDept()},del:!!x,extra:x&&x.id!==SES.id?()=>accBox(x,'users'):null,
    intro:t('users_note'),
    fields:[{k:'name',l:t('name'),req:true,full:true},{k:'role',l:t('role'),type:'select',opts:[['manager',t('role_manager')],['accountant',t('role_accountant')],['dispatcher',t('role_dispatcher')]],empty:false},
-    {k:'idNo',l:t('id_or_iqama'),type:'tel',req:true},{k:'phone',l:t('phone'),type:'tel',req:true}],
+    {k:'idNo',l:t('id_or_iqama'),type:'tel',req:true},{k:'phone',l:t('phone'),type:'tel',req:true},{k:'dept',l:t('dept_access'),type:'select',opts:[...depts().map(d=>[d.id,d.name]),['all',t('all_depts')]],empty:false,full:true,show:f=>f.role!=='manager',hint:t('dept_access_hint')}],
    onDel:()=>{if(x.id===SES.id)return t('cant_delete_self');S.users=S.users.filter(y=>y.id!==x.id)},
    onSave:v=>{v.idNo=String(v.idNo).replace(/\D/g,'');v.phone=normPhone(v.phone);if(!idKind(v.idNo))return t('id_invalid');if(idTaken(v.idNo,x&&x.id))return t('id_taken');if(!/^05\d{8}$/.test(v.phone))return t('phone_invalid');if(x&&x.id===SES.id&&v.role!=='manager')return t('not_allowed');if(x)Object.assign(x,v);else{const u={id:uid('u'),...v};S.users.push(u);showAct(u)}log(`${t('users')}: ${v.name}`)}})}
 
@@ -1044,7 +1067,10 @@ function driverAction(p,act){const drv=isDriver();if(drv&&p.driverId!==SES.id)re
 /* ---------- views ---------- */
 const V={};
 const back=()=>`<button class="iconbtn" data-act="pop" aria-label="${esc(t('back'))}">${IC.back}</button>`;
-function bar(title,sub,right){return`<header class="appbar">${ui.stack.length?back():''}<h1>${esc(title)}${sub?`<div class="sub">${esc(sub)}</div>`:''}</h1>${right||''}</header>`}
+function deptBar(){if(!SES||isDriver()||ui.stack.length)return'';const sc=scope();
+  if(canAll())return`<label class="deptsel">${IC.grid}<select aria-label="${esc(t('dept'))}" onchange="ACT['dept-set'](this.value)">${[['all',t('all_depts')],...depts().map(d=>[d.id,d.name])].map(([v,l])=>`<option value="${v}"${v===sc?' selected':''}>${esc(l)}</option>`).join('')}</select></label>`;
+  return`<span class="deptsel">${IC.grid}${esc(deptName(sc))}</span>`}
+function bar(title,sub,right){return`<header class="appbar">${ui.stack.length?back():''}<h1>${esc(title)}${sub?`<div class="sub">${esc(sub)}</div>`:''}</h1>${deptBar()}${right||''}</header>`}
 const sec=(title,body,act)=>`<section class="stack"><div class="spread"><h2>${esc(title)}</h2>${act||''}</div>${body}</section>`;
 const emptyBox=()=>`<div class="empty">${esc(t('no_data'))}</div>`;
 
@@ -1084,11 +1110,11 @@ V.phone=()=>{const a=accountOf(SES);return`<div class="login"><div class="brand"
 
 /* home: one per role */
 V.home=()=>isDriver()?V.driverHome():SES.role==='dispatcher'?V.dispHome():V.finHome();
-function startCard(){if(!isMgr())return'';const steps=[['add_trucks',S.trucks.length,'truck-new',IC.truck],['add_drivers',S.drivers.length,'driver-new',IC.person],['add_clients',S.clients.length,'client-new',IC.users],['add_routes',S.routes.length,'route-new',IC.pin]];
+function startCard(){if(!isMgr())return'';const steps=[['add_trucks',DS.trucks.length,'truck-new',IC.truck],['add_drivers',DS.drivers.length,'driver-new',IC.person],['add_clients',DS.clients.length,'client-new',IC.users],['add_routes',DS.routes.length,'route-new',IC.pin]];
   if(steps.every(x=>x[1]))return'';
   return sec(t('get_started'),`<div class="list">${steps.map(([l,n,a,ic])=>`<button class="item" data-act="${a}"><span class="ic" style="${n?'background:var(--good-soft);color:var(--good)':''}">${n?IC.check:ic}</span><span class="t"><b>${esc(t(l))}</b><span>${n?int(n):''}</span></span>${IC.plus.replace('<svg','<svg class="chev"')}</button>`).join('')}</div>`)}
-V.finHome=()=>{const m=curMonth(),st=monthStats(m),al=alerts(),act=S.trips.filter(p=>ACTIVE.includes(p.status));
-  const recv=sum(S.trips.filter(p=>p.status==='delivered'),tripDue),unc=S.trips.filter(p=>payState(p)==='pay_paid').length;
+V.finHome=()=>{const m=curMonth(),st=monthStats(m),al=alerts(),act=DS.trips.filter(p=>ACTIVE.includes(p.status));
+  const recv=sum(DS.trips.filter(p=>p.status==='delivered'),tripDue),unc=DS.trips.filter(p=>payState(p)==='pay_paid').length;
   const ms=[5,4,3,2,1,0].map(k=>prevMonth(m,k)),vals=ms.map(x=>monthStats(x).net),mx=Math.max(1,...vals.map(Math.abs));
   return bar(S.settings.company,t('role_'+SES.role)+' · '+SES.name)+`<main class="stack">${startCard()}
   <div class="kpis"><div class="kpi hero"><div class="l">${esc(t('net_profit'))} · ${esc(fmonth(m))}</div><div class="v">${money(st.net)}</div></div>
@@ -1102,16 +1128,16 @@ V.finHome=()=>{const m=curMonth(),st=monthStats(m),al=alerts(),act=S.trips.filte
   ${sec(t('profit_6m'),`<div class="card"><div class="bars">${ms.map((x,i)=>`<div class="b"><em class="num ${vals[i]<0?'negv':''}">${nf(vals[i]/1000,1)}k</em><i class="${vals[i]<0?'neg':''}" style="height:${Math.max(3,Math.abs(vals[i])/mx*90)}px"></i><span>${esc(fmonthS(x))}</span></div>`).join('')}</div></div>`)}
   </main>`};
 function alertsCard(al){return sec(t('alerts'),`<div class="card">${al.length?al.slice(0,8).map(a=>`<div class="alert ${a.lvl}" role="button" tabindex="0" data-act="open" data-type="${a.go[0]}" data-id="${a.go[1]}" style="cursor:pointer">${IC.alert}<span class="grow">${esc(a.txt)}</span></div>`).join(''):`<div class="muted small">${esc(t('no_alerts'))}</div>`}</div>`,al.length>8?`<button class="link" data-act="push" data-type="alerts">${esc(t('view_all'))} (${al.length})</button>`:'')}
-V.dispHome=()=>{const T0=today(),by=s=>S.trips.filter(p=>p.status===s);
-  const freeDrivers=S.drivers.filter(d=>d.status==='ds_active'&&!S.trips.some(p=>p.driverId===d.id&&['sent','accepted','onroad'].includes(p.status)));
-  const act=S.trips.filter(p=>ACTIVE.includes(p.status)).sort((a,b)=>ACTIVE.indexOf(a.status)-ACTIVE.indexOf(b.status));
+V.dispHome=()=>{const T0=today(),by=s=>DS.trips.filter(p=>p.status===s);
+  const freeDrivers=DS.drivers.filter(d=>d.status==='ds_active'&&!DS.trips.some(p=>p.driverId===d.id&&['sent','accepted','onroad'].includes(p.status)));
+  const act=DS.trips.filter(p=>ACTIVE.includes(p.status)).sort((a,b)=>ACTIVE.indexOf(a.status)-ACTIVE.indexOf(b.status));
   return bar(S.settings.company,t('role_'+SES.role)+' · '+SES.name)+`<main class="stack">
   <div class="kpis"><div class="kpi"><div class="l">${esc(t('st_new'))}</div><div class="v">${int(by('new').length)}</div></div><div class="kpi"><div class="l">${esc(t('waiting_accept'))}</div><div class="v">${int(by('sent').length)}</div></div>
    <div class="kpi"><div class="l">${esc(t('st_onroad'))}</div><div class="v">${int(by('onroad').length+by('accepted').length)}</div></div><div class="kpi"><div class="l">${esc(t('available_drivers'))}</div><div class="v">${int(freeDrivers.length)}</div></div></div>
   <button class="btn block amber" data-act="trip-new">${IC.plus}${esc(t('new_trip'))}</button>
   ${sec(t('active_trips'),act.length?`<div class="list">${act.map(tripItem).join('')}</div>`:emptyBox())}
   ${alertsCard(alerts())}</main>`};
-V.driverHome=()=>{const me=SES.id,mine=S.trips.filter(p=>p.driverId===me);
+V.driverHome=()=>{const me=SES.id,mine=DS.trips.filter(p=>p.driverId===me);
   const req=mine.filter(p=>p.status==='sent'),curT=mine.filter(p=>p.status==='accepted'||p.status==='onroad'),done=tripsIn(curMonth(),p=>p.driverId===me&&p.status==='delivered').length;
   const card=(p,acts)=>`<div class="card stack"><div class="spread"><b style="font-size:1.05rem">${esc(p.from)} ${arrow()} ${esc(p.to)}</b>${stPill(p)}</div>
     <dl class="kv"><dt>${esc(t('cargo'))}</dt><dd>${esc(p.cargo||'—')}${p.weight?` · <span class="num">${p.weight}</span> ${t('tons')}`:''}</dd><dt>${esc(t('load_date'))}</dt><dd>${fdate(p.loadDate)}</dd><dt>${esc(t('client'))}</dt><dd>${esc(clientName(p.clientId))}</dd><dt>${esc(t('truck'))}</dt><dd>${esc(plateOf(p.truckId))}</dd>${p.notes?`<dt>${esc(t('notes'))}</dt><dd>${esc(p.notes)}</dd>`:''}</dl>
@@ -1127,7 +1153,7 @@ function tripItem(p){const fin=!isDriver();return`<button class="item" data-act=
   <span class="e">${stPill(p)}${can('finance')?payPill(p):''}${fin?`<span class="small num">${nf(p.price,0)}</span>`:''}</span></button>`}
 
 V.trips=()=>{const f=isDriver()?'all':ui.filter,q=ui.q.trim().toLowerCase();
-  let ps=S.trips.slice().sort((a,b)=>(b.loadDate+b.no)>(a.loadDate+a.no)?1:-1);
+  let ps=DS.trips.slice().sort((a,b)=>(b.loadDate+b.no)>(a.loadDate+a.no)?1:-1);
   if(isDriver())ps=ps.filter(p=>p.driverId===SES.id&&p.status!=='sent');
   const flt={active:p=>ACTIVE.includes(p.status),waiting:p=>p.status==='sent',delivered:p=>p.status==='delivered',unpaid:p=>['pay_unpaid','pay_partial'].includes(payState(p)),topay:p=>payState(p)==='pay_paid',confirmed:p=>!!p.confirmed,cancelled:p=>p.status==='cancelled',all:()=>true};
   ps=ps.filter(flt[f]||flt.all);
@@ -1204,9 +1230,9 @@ V.invoice=id=>{const p=byId('trips',id),c=byId('clients',p.clientId)||{},s=S.set
   </div><button class="btn noprint" data-act="print">${IC.printer}${esc(t('print'))}</button></main>`};
 
 V.fleet=()=>{const ft=ui.fleetTab;let body='',add='';
-  if(ft==='trucks'){body=S.trucks.length?`<div class="list">${S.trucks.map(x=>{const n=tripsIn(curMonth(),p=>p.truckId===x.id).length;return`<button class="item" data-act="open" data-type="truck" data-id="${x.id}"><span class="ic">${IC.truck}</span><span class="t"><b>${esc(x.plate)}</b><span>${esc(x.make)} ${esc(x.model)} · ${esc(t(x.trailer))} · <span class="num">${nf(x.odo,0)}</span> ${t('km')}</span></span><span class="e">${pill(x.status,TRUCK_ST[x.status])}<span class="xs muted">${esc(t('n_trips',{n}))}</span></span></button>`}).join('')}</div>`:emptyBox();add='truck-new'}
-  if(ft==='drivers'){body=S.drivers.length?`<div class="list">${S.drivers.map(d=>`<button class="item" data-act="open" data-type="driver" data-id="${d.id}"><span class="ic">${IC.person}</span><span class="t"><b>${esc(d.name)}</b><span>${esc(plateOf(d.truckId))} · <span class="num">${esc(d.phone||'')}</span></span></span><span class="e">${pill(d.status,d.status==='ds_active'?'good':d.status==='ds_leave'?'warn':'')}</span></button>`).join('')}</div>`:emptyBox();add='driver-new'}
-  if(ft==='tyres'){body=S.trucks.map(x=>{const ty=S.tyres.filter(y=>y.truckId===x.id);return ty.length?`<h3 class="muted">${esc(x.plate)}</h3><div class="list">${ty.map(y=>`<button class="item" data-act="tyre-edit" data-id="${y.id}"><span class="ic">${IC.tyre}</span><span class="t"><b>${esc(y.pos)}</b><span>${esc(y.brand||'')} ${esc(y.size||'')} · ${esc(t('tyre_km'))}: <span class="num">${nf(Math.max(0,(+x.odo)-(+y.odo||0)),0)}</span> ${t('km')}</span></span><span class="e">${pill(y.status,y.status==='ty_ok'?'good':y.status==='ty_repaired'?'warn':'bad')}</span></button>`).join('')}</div>`:''}).join('')||emptyBox();add='tyre-new'}
+  if(ft==='trucks'){body=DS.trucks.length?`<div class="list">${DS.trucks.map(x=>{const n=tripsIn(curMonth(),p=>p.truckId===x.id).length;return`<button class="item" data-act="open" data-type="truck" data-id="${x.id}"><span class="ic">${IC.truck}</span><span class="t"><b>${esc(x.plate)}</b><span>${esc(x.make)} ${esc(x.model)} · ${esc(t(x.trailer))} · <span class="num">${nf(x.odo,0)}</span> ${t('km')}</span></span><span class="e">${pill(x.status,TRUCK_ST[x.status])}<span class="xs muted">${esc(t('n_trips',{n}))}</span></span></button>`}).join('')}</div>`:emptyBox();add='truck-new'}
+  if(ft==='drivers'){body=DS.drivers.length?`<div class="list">${DS.drivers.map(d=>`<button class="item" data-act="open" data-type="driver" data-id="${d.id}"><span class="ic">${IC.person}</span><span class="t"><b>${esc(d.name)}</b><span>${esc(plateOf(d.truckId))} · <span class="num">${esc(d.phone||'')}</span></span></span><span class="e">${pill(d.status,d.status==='ds_active'?'good':d.status==='ds_leave'?'warn':'')}</span></button>`).join('')}</div>`:emptyBox();add='driver-new'}
+  if(ft==='tyres'){body=DS.trucks.map(x=>{const ty=S.tyres.filter(y=>y.truckId===x.id);return ty.length?`<h3 class="muted">${esc(x.plate)}</h3><div class="list">${ty.map(y=>`<button class="item" data-act="tyre-edit" data-id="${y.id}"><span class="ic">${IC.tyre}</span><span class="t"><b>${esc(y.pos)}</b><span>${esc(y.brand||'')} ${esc(y.size||'')} · ${esc(t('tyre_km'))}: <span class="num">${nf(Math.max(0,(+x.odo)-(+y.odo||0)),0)}</span> ${t('km')}</span></span><span class="e">${pill(y.status,y.status==='ty_ok'?'good':y.status==='ty_repaired'?'warn':'bad')}</span></button>`).join('')}</div>`:''}).join('')||emptyBox();add='tyre-new'}
   return bar(t('fleet'))+`<main class="stack"><div class="seg">${[['trucks','trucks'],['drivers','drivers'],['tyres','tyres']].map(([k,l])=>`<button data-act="fleet-tab" data-id="${k}" aria-pressed="${ft===k}">${esc(t(l))}</button>`).join('')}</div>${body}</main>
   ${can('fleet')?`<button class="fab" data-act="${add}" aria-label="${esc(t('add'))}">${IC.plus}</button>`:''}`};
 
@@ -1237,12 +1263,12 @@ V.driver=id=>{const d=byId('drivers',id);if(!d)return gone();const m=ui.month,ps
   ${sec(t('trips'),ps.length?`<div class="list">${ps.slice().reverse().map(tripItem).join('')}</div>`:emptyBox())}</main>`};
 
 V.clients=()=>{const ct=ui.clientTab;let body='',add='';
-  if(ct==='clients'){body=S.clients.length?`<div class="list">${S.clients.map(c=>{const b=clientBalance(c.id);return`<button class="item" data-act="open" data-type="client" data-id="${c.id}"><span class="ic">${IC.users}</span><span class="t"><b>${esc(c.name)}</b><span>${esc(t(c.terms))}${c.terms==='t_credit'?' · <span class="num">'+(c.days||0)+'</span> '+t('days'):''} · <span class="num">${esc(c.phone||'')}</span></span></span><span class="e"><span class="xs muted">${esc(t('balance'))}</span><b class="${b>.01?'negv':''}">${int(b)}</b></span></button>`}).join('')}</div>`:emptyBox();add='client-new'}
-  else{body=S.routes.length?`<div class="list">${S.routes.map(r=>`<button class="item" data-act="route-edit" data-id="${r.id}"><span class="ic">${IC.pin}</span><span class="t"><b>${esc(r.from)} - ${esc(r.to)}</b><span><span class="num">${nf(r.km,0)}</span> ${t('km')} · ${esc(t('ex_diesel'))} ${int(r.diesel)} · ${esc(t('driver'))} ${int(r.driver)}</span></span><span class="e"><b>${int(r.price)}</b><span class="xs muted">${t('sar')}</span></span></button>`).join('')}</div>`:emptyBox();add='route-new'}
+  if(ct==='clients'){body=DS.clients.length?`<div class="list">${DS.clients.map(c=>{const b=clientBalance(c.id);return`<button class="item" data-act="open" data-type="client" data-id="${c.id}"><span class="ic">${IC.users}</span><span class="t"><b>${esc(c.name)}</b><span>${esc(t(c.terms))}${c.terms==='t_credit'?' · <span class="num">'+(c.days||0)+'</span> '+t('days'):''} · <span class="num">${esc(c.phone||'')}</span></span></span><span class="e"><span class="xs muted">${esc(t('balance'))}</span><b class="${b>.01?'negv':''}">${int(b)}</b></span></button>`}).join('')}</div>`:emptyBox();add='client-new'}
+  else{body=DS.routes.length?`<div class="list">${DS.routes.map(r=>`<button class="item" data-act="route-edit" data-id="${r.id}"><span class="ic">${IC.pin}</span><span class="t"><b>${esc(r.from)} - ${esc(r.to)}</b><span><span class="num">${nf(r.km,0)}</span> ${t('km')} · ${esc(t('ex_diesel'))} ${int(r.diesel)} · ${esc(t('driver'))} ${int(r.driver)}</span></span><span class="e"><b>${int(r.price)}</b><span class="xs muted">${t('sar')}</span></span></button>`).join('')}</div>`:emptyBox();add='route-new'}
   return bar(t('clients'))+`<main class="stack"><div class="seg">${[['clients','clients'],['routes','routes']].map(([k,l])=>`<button data-act="client-tab" data-id="${k}" aria-pressed="${ct===k}">${esc(t(l))}</button>`).join('')}</div>${body}</main>
   ${(ct==='clients'?can('clients')||can('trips'):can('routes'))?`<button class="fab" data-act="${add}" aria-label="${esc(t('add'))}">${IC.plus}</button>`:''}`};
 
-V.client=id=>{const c=byId('clients',id);if(!c)return gone();const ps=S.trips.filter(p=>p.clientId===id&&p.status==='delivered').sort((a,b)=>a.loadDate<b.loadDate?1:-1),T0=today();
+V.client=id=>{const c=byId('clients',id);if(!c)return gone();const ps=DS.trips.filter(p=>p.clientId===id&&p.status==='delivered').sort((a,b)=>a.loadDate<b.loadDate?1:-1),T0=today();
   const b=clientBalance(id);
   return bar(c.name,t(c.terms),(can('clients')||can('trips'))?`<button class="iconbtn" data-act="client-edit" aria-label="${esc(t('edit'))}">${IC.wrench}</button>`:'')+`<main class="stack">
   <div class="kpis"><div class="kpi hero"><div class="l">${esc(t('balance'))}</div><div class="v">${money(b)}</div></div><div class="kpi"><div class="l">${esc(t('trips_count'))}</div><div class="v">${int(ps.length)}</div></div><div class="kpi"><div class="l">${esc(t('credit_limit'))}</div><div class="v">${c.limit?int(c.limit):'—'}</div></div></div>
@@ -1258,14 +1284,14 @@ V.more=()=>{const items=[['drivers-add','new_driver',IC.person,'fleet'],['fixed'
    <p class="note small">${esc(t('demo_note'))}</p><p class="muted xs">${esc(t('install_hint'))}</p></main>`};
 
 V.fixed=()=>{const m=ui.month,list=S.fixed.filter(f=>f.month===m);
-  const autoRows=S.trucks.filter(x=>x.status!=='ts_stopped').map(x=>`<tr><td>${esc(x.plate)}</td><td class="num">${nf((+x.insAnnual||0)/12)}</td><td class="num">${nf(x.own==='own_loan'?x.installment:0)}</td><td class="num">${nf(sum(truckDrivers(x.id),d=>(+d.salary||0)+(+d.allow||0)))}</td><td class="num"><b>${nf(truckFixed(x.id,m))}</b></td><td class="num">${int(tripsIn(m,p=>p.truckId===x.id).length)}</td></tr>`).join('');
+  const autoRows=DS.trucks.filter(x=>x.status!=='ts_stopped').map(x=>`<tr><td>${esc(x.plate)}</td><td class="num">${nf((+x.insAnnual||0)/12)}</td><td class="num">${nf(x.own==='own_loan'?x.installment:0)}</td><td class="num">${nf(sum(truckDrivers(x.id),d=>(+d.salary||0)+(+d.allow||0)))}</td><td class="num"><b>${nf(truckFixed(x.id,m))}</b></td><td class="num">${int(tripsIn(m,p=>p.truckId===x.id).length)}</td></tr>`).join('');
   return bar(t('fixed_costs'),fmonth(m))+`<main class="stack"><input type="month" class="search" style="max-width:200px" value="${m}" data-ch="month" aria-label="${esc(t('month'))}">
   <div class="kpis"><div class="kpi hero"><div class="l">${esc(t('fixed_costs'))} · ${esc(fmonth(m))}</div><div class="v">${money(monthFixed(m))}</div></div></div>
   ${sec(t('manual_fixed'),list.length?`<div class="list">${list.map(f=>`<button class="item" data-act="fixed-edit" data-id="${f.id}"><span class="ic">${IC.coin}</span><span class="t"><b>${esc(t(f.cat))}</b><span>${f.truckId?esc(plateOf(f.truckId)):esc(t('general'))}${f.note?' · '+esc(f.note):''}</span></span><b>${money(f.amount)}</b></button>`).join('')}</div>`:emptyBox(),`<button class="btn sec sm" data-act="fixed-new">${IC.plus}${esc(t('add'))}</button>`)}
   ${sec(t('auto_fixed'),`<p class="muted small" style="margin:0">${esc(t('auto_fixed_note'))}</p><div class="tablewrap"><table><thead><tr><th>${esc(t('truck'))}</th><th>${esc(t('insurance'))}</th><th>${esc(t('installment'))}</th><th>${esc(t('salary'))}</th><th>${esc(t('total'))}</th><th>${esc(t('trips_count'))}</th></tr></thead><tbody>${autoRows}</tbody></table></div><p class="muted xs" style="margin:0">${esc(t('alloc_note'))}</p>`)}</main>`};
 
 V.reports=()=>{const m=ui.month,st=monthStats(m),ps=tripsIn(m),rt=ui.repTab;
-  const groups={truck:[S.trucks,x=>x.plate,(x,p)=>p.truckId===x.id],driver:[S.drivers,x=>x.name,(x,p)=>p.driverId===x.id],client:[S.clients,x=>x.name,(x,p)=>p.clientId===x.id],route:[S.routes,x=>x.from+' - '+x.to,(x,p)=>p.routeId===x.id]};
+  const groups={truck:[DS.trucks,x=>x.plate,(x,p)=>p.truckId===x.id],driver:[DS.drivers,x=>x.name,(x,p)=>p.driverId===x.id],client:[DS.clients,x=>x.name,(x,p)=>p.clientId===x.id],route:[DS.routes,x=>x.from+' - '+x.to,(x,p)=>p.routeId===x.id]};
   const [arr,name,match]=groups[rt];
   const rows=arr.map(x=>{const q=ps.filter(p=>match(x,p));const rev=sum(q,p=>p.price),ex=sum(q,tripExp),fx=rt==='truck'?truckFixed(x.id,m):sum(q,fixedShare),km=sum(q,tripKm),lit=sum(q,p=>sum(p.expenses.filter(e=>e.type==='ex_diesel'),e=>e.liters||0));
     return{n:name(x),trips:q.length,km,rev,ex,fx,net:rev-ex-fx,l100:km?lit/km*100:0,due:rt==='client'?clientBalance(x.id):null}}).filter(r=>r.trips||r.fx);
@@ -1287,6 +1313,7 @@ V.settings=()=>bar(t('settings'))+`<main class="stack">
   ${sec(t('language'),`<div class="seg">${LANGS.map(l=>`<button data-act="lang" data-id="${l[0]}" aria-pressed="${LANG===l[0]}">${l[1]}</button>`).join('')}</div>`)}
   ${sec(t('theme'),`<div class="seg">${['auto','light','dark'].map(k=>`<button data-act="theme" data-id="${k}" aria-pressed="${PREFS.theme===k}">${esc(t('th_'+k))}</button>`).join('')}</div>`)}
   ${can('*')?sec(t('company'),`<div class="card"><dl class="kv"><dt>${esc(t('company_name'))}</dt><dd>${esc(S.settings.company)}</dd><dt>${esc(t('vat_no'))}</dt><dd class="num">${esc(S.settings.vatNo||'—')}</dd><dt>${esc(t('vat_pct'))}</dt><dd class="num">${S.settings.vat}%</dd><dt>${esc(t('diesel_price'))}</dt><dd>${money(S.settings.dieselPrice)}</dd><dt>${esc(t('alert_days'))}</dt><dd class="num">${S.settings.alertDays}</dd></dl></div>`,`<button class="btn sec sm" data-act="settings-edit">${esc(t('edit'))}</button>`):''}
+  ${can('*')?sec(t('depts'),`<div class="list">${depts().map(d=>`<button class="item" data-act="dept-edit" data-id="${d.id}"><span class="ic">${IC.grid}</span><span class="t"><b>${esc(d.name)}</b><span><span class="num">${S.trucks.filter(x=>x.dept===d.id).length}</span> ${esc(t('trucks'))} · <span class="num">${S.drivers.filter(x=>x.dept===d.id&&x.status!=='ds_left').length}</span> ${esc(t('drivers'))} · <span class="num">${S.users.filter(x=>x.dept===d.id&&x.role!=='manager').length}</span> ${esc(t('users'))}</span></span>${IC.chev||''}</button>`).join('')}</div>`,`<button class="btn sec sm" data-act="dept-new">${IC.plus}${esc(t('add'))}</button>`):''}
   ${can('*')?sec(t('backup'),`<div class="row"><button class="btn sec" data-act="backup">${IC.save}${esc(t('export_backup'))}</button><label class="btn ghost">${IC.upload}${esc(t('import_backup'))}<input type="file" accept="application/json,.json" data-restore hidden></label></div><button class="btn ghost sm" data-act="reset" style="color:var(--bad)">${esc(t('wipe_data'))}</button>`):''}
   <p class="note small">${esc(t('demo_note'))}</p></main>`;
 
@@ -1305,7 +1332,7 @@ function render(){applyLang();const app=$('#app');
   const NAV=NAVS[SES.role]||NAVS.driver;if(!NAV.some(n=>n[0]===ui.tab)){ui.tab='home';ui.stack=[]}
   const s=cur();let html;
   if(s)html=V[s.type](s.id);else html=V[ui.tab]();
-  const al=isDriver()?S.trips.filter(p=>p.driverId===SES.id&&p.status==='sent').length:alerts().filter(a=>a.lvl==='bad').length;
+  const al=isDriver()?DS.trips.filter(p=>p.driverId===SES.id&&p.status==='sent').length:alerts().filter(a=>a.lvl==='bad').length;
   html+=`<nav class="tabbar" aria-label="nav"><div class="in">${NAV.map(([k,l,ic])=>`<button data-act="go" data-id="${k}" aria-current="${ui.tab===k?'page':'false'}">${ic}<span>${esc(t(l))}</span>${k==='home'&&al?`<span class="dot num">${al}</span>`:''}</button>`).join('')}</div></nav>`;
   if(ui.confirm)html+=`<div class="scrim" style="z-index:60" data-act="confirm-no"><div class="sheet" role="alertdialog" aria-modal="true"><div class="body"><p style="margin:0;font-weight:600">${esc(ui.confirm.msg)}</p>${ui.confirm.sub?`<p class="muted small" style="margin:0">${esc(ui.confirm.sub)}</p>`:''}</div><footer><button class="btn ghost" data-act="confirm-no">${esc(t('cancel'))}</button><button class="btn ${ui.confirm.kind||'bad'}" data-act="confirm-yes">${esc(ui.confirm.ok)}</button></footer></div></div>`;
   if(ui.actShow){const a=ui.actShow,url=appUrl(),msg=t('wa_msg',{n:a.name,c:S.settings.company,code:a.code,u:url?' '+url:''});
@@ -1356,6 +1383,11 @@ const ACT={
  'act-copy':()=>{const c=ui.actShow&&ui.actShow.code;if(!c)return;try{navigator.clipboard.writeText(c).then(()=>toast(t('copied')),()=>{})}catch(e){}},
  'phone-save':()=>{const v=(($('#mob')||{}).value||'').replace(/\s/g,'');if(!/^05\d{8}$/.test(v)){toast(t('phone_invalid'),'bad');return}
    const a=accountOf(SES);a.phone=v;log(`${t('phone')}: ${a.name}`);save();toast(t('phone_saved'));render()},
+ 'dept-set':v=>{PREFS.dept=v;try{localStorage.setItem(PREF_KEY,JSON.stringify(PREFS))}catch(e){}ui.stack=[];render()},
+ 'dept-new':()=>{if(!guard('*'))return;openForm({title:t('new_dept'),values:{},fields:[{k:'name',l:t('name'),req:true,full:true}],onSave:v=>{S.depts=depts().slice();S.depts.push({id:uid('dp'),name:v.name});log(`+ ${t('dept')} ${v.name}`)}})},
+ 'dept-edit':id=>{if(!guard('*'))return;const d=depts().find(x=>x.id===id);if(!d)return;openForm({title:d.name,values:{...d},del:true,fields:[{k:'name',l:t('name'),req:true,full:true}],
+   onDel:()=>{if(depts().length<2||['trips','trucks','drivers','clients','routes'].some(c=>S[c].some(x=>x.dept===id))||S.users.some(u=>u.dept===id))return t('dept_not_empty');S.depts=depts().filter(x=>x.id!==id);if(PREFS.dept===id)PREFS.dept='all'},
+   onSave:v=>{d.name=v.name;S.depts=depts();log(`${t('dept')}: ${v.name}`)}})},
  'loc-pick':(id,el)=>openPicker(el.dataset.type),
  'pk-close':()=>closePicker(),
  'pk-search':()=>pickerSearch(),
@@ -1401,7 +1433,7 @@ const ACT={
  'confirm-no':(id,el,e)=>{if(e.target!==el&&el.classList.contains('scrim'))return;ui.confirm=null;render()},
  'confirm-yes':()=>{const c=ui.confirm;ui.confirm=null;const r=c.fn();if(r!==false){save();}render()},
  'csv-rep':()=>{const cols=ui._repCols,rows=ui._rep||[];csv(`report-${ui.repTab}-${ui.month}.csv`,cols.map(c=>c[1]),rows.map(r=>cols.map(c=>c[0]==='n'?r.n:c[0]==='l100'?(r.l100?r.l100.toFixed(1):''):typeof r[c[0]]==='number'?r2(r[c[0]]):r[c[0]])))},
- 'csv-client':()=>{const c=byId('clients',cur().id),ps=S.trips.filter(p=>p.clientId===c.id&&p.status==='delivered');csv(`statement-${c.name}.csv`,[t('trip_no'),t('date'),t('from'),t('to'),t('price'),t('vat'),t('total_vat'),t('paid'),t('remaining'),t('due_date')],ps.map(p=>[p.no,p.loadDate,p.from,p.to,p.price,tripVat(p),tripTotal(p),tripPaid(p),Math.max(0,tripDue(p)),dueDateOf(p)]))},
+ 'csv-client':()=>{const c=byId('clients',cur().id),ps=DS.trips.filter(p=>p.clientId===c.id&&p.status==='delivered');csv(`statement-${c.name}.csv`,[t('trip_no'),t('date'),t('from'),t('to'),t('price'),t('vat'),t('total_vat'),t('paid'),t('remaining'),t('due_date')],ps.map(p=>[p.no,p.loadDate,p.from,p.to,p.price,tripVat(p),tripTotal(p),tripPaid(p),Math.max(0,tripDue(p)),dueDateOf(p)]))},
  'backup':async()=>{const photos={};if(idb){const ids=[];JSON.stringify(S).replace(/"(ph_[a-z0-9]+)"/g,(m,id)=>ids.push(id));for(const id of ids)photos[id]=await photoGet(id)}
    downloadText(`backup-${today()}.json`,JSON.stringify({app:'naql',S,photos}),'application/json');toast(t('backup_done'))},
  'reset':()=>{if(!guard('*'))return;ui.confirm={msg:t('wipe_data'),sub:t('wipe_confirm'),ok:t('wipe_data'),fn:()=>{S=emptyState(S.settings,S.users);clearPhotos();log(t('wipe_data'));ui.stack=[];ui.tab='home'}};render()},
