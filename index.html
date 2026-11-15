@@ -611,6 +611,8 @@ loc_later|اختياري، تقدر تضيفه لاحقاً من صفحة الر
 loc_bad|رابط اللوكيشن غير صحيح، الصق رابط قوقل ماب|Invalid location, paste a Google Maps link|غلط لوکیشن، گوگل میپ لنک پیسٹ کریں|गलत लोकेशन, गूगल मैप लिंक पेस्ट करें|ভুল লোকেশন, গুগল ম্যাপ লিংক দিন
 loc_getting|جاري تحديد الموقع…|Getting location…|لوکیشن حاصل کی جا رہی ہے…|लोकेशन ली जा रही है…|লোকেশন নেওয়া হচ্ছে…
 loc_denied|تعذّر تحديد الموقع، اسمح بالوصول للموقع أو الصق الرابط|Couldn't get location; allow location access or paste a link|لوکیشن نہیں ملی، اجازت دیں یا لنک پیسٹ کریں|लोकेशन नहीं मिली, अनुमति दें या लिंक पेस्ट करें|লোকেশন পাওয়া যায়নি, অনুমতি দিন বা লিংক দিন
+cost_since|بداية احتساب التكاليف الثابتة|Fixed costs start from|مقررہ اخراجات کا آغاز|स्थिर लागत शुरू|স্থির খরচ শুরু
+cost_since_hint|الشهر اللي تبدأ تنحسب فيه تكاليف الشاحنة الثابتة|Month the truck's fixed costs start counting|وہ مہینہ جب سے ٹرک کے مقررہ اخراجات شمار ہوں|वह महीना जब से ट्रक की स्थिर लागत गिनी जाए|যে মাস থেকে ট্রাকের স্থির খরচ গণনা হবে
 `;
 const T={};
 for(const line of DICT.trim().split('\n')){const p=line.split('|');T[p[0]]=p.slice(1)}
@@ -701,6 +703,8 @@ function migrate(){let ch=false;const ids={u1:'1012345678',u2:'1023456789',u3:'2
   for(const u of S.users){if(!u.idNo){u.idNo=ids[u.id]||'';ch=true}if(u.phone===undefined){u.phone='';ch=true}}
   for(const d of S.drivers){if(!d.pin){d.pin='1234';ch=true}}
   for(const p of S.trips){if(p.status==='scheduled'){p.status='accepted';ch=true}if(!p.events){p.events=[];ch=true}for(const k of['loadDocs','cargoPhotos','unloadDocs'])if(!p[k]){p[k]=[];ch=true}}
+  const oldest=S.log.length?monthOf(S.log[S.log.length-1].at):curMonth();
+  for(const x of S.trucks)if(!x.since){const e=S.log.find(l=>l.msg&&l.msg.startsWith('+ ')&&l.msg.endsWith(' '+x.plate));x.since=e?monthOf(e.at):oldest;ch=true}
   if(ch)save()}
 // a signed-in account is a staff user or a driver
 function accountOf(ses){if(!ses)return null;return ses.role==='driver'?S.drivers.find(d=>d.id===ses.id):S.users.find(u=>u.id===ses.id)}
@@ -759,7 +763,7 @@ function truckAutoFixed(trk){return r2((+trk.insAnnual||0)/12+(trk.own==='own_lo
 // fixed costs are charged as the full monthly amount (owner's choice)
 const monthFactor=m=>1;
 function truckFixed(id,m){const trk=byId('trucks',id);if(!trk)return 0;const n=Math.max(1,activeTrucks().length);
-  return r2(monthFactor(m)*(truckAutoFixed(trk)+sum(S.fixed.filter(f=>f.month===m&&f.truckId===id),f=>f.amount)+sum(S.fixed.filter(f=>f.month===m&&!f.truckId),f=>f.amount)/n))}
+  return r2(monthFactor(m)*((!trk.since||m>=trk.since?truckAutoFixed(trk):0)+sum(S.fixed.filter(f=>f.month===m&&f.truckId===id),f=>f.amount)+sum(S.fixed.filter(f=>f.month===m&&!f.truckId),f=>f.amount)/n))}
 function monthFixed(m){return r2(sum(S.trucks.filter(x=>x.status!=='ts_stopped'||S.fixed.some(f=>f.truckId===x.id&&f.month===m)),x=>truckFixed(x.id,m)))}
 const tripsIn=(m,f)=>S.trips.filter(p=>isLive(p)&&monthOf(p.loadDate)===m&&(!f||f(p)));
 function fixedShare(p){if(!p.truckId||!isLive(p))return 0;const m=monthOf(p.loadDate);const n=tripsIn(m,x=>x.truckId===p.truckId).length;return n?r2(truckFixed(p.truckId,m)/n):0}
@@ -900,14 +904,14 @@ function paymentForm(p,y){if(!guard('pay'))return;if(p.confirmed&&!isMgr())retur
    onSave:v=>{if(y)Object.assign(y,v);else p.payments.push({id:uid('y'),...v,by:SES.name});log(`${t('add_payment')} ${moneyT(v.amount)} · ${t('trip')} ${p.no}`)}})}
 
 function truckForm(x){if(!guard('fleet'))return;const isNew=!x;
-  const v=x?{...x,...Object.fromEntries(Object.entries(x.docs||{}).map(([k,d])=>['doc_'+k,d]))}:{trailer:'tr_flat',own:'own_cash',status:'ts_available',serviceEvery:10000};
+  const v=x?{...x,...Object.fromEntries(Object.entries(x.docs||{}).map(([k,d])=>['doc_'+k,d]))}:{trailer:'tr_flat',own:'own_cash',status:'ts_available',serviceEvery:10000,since:curMonth()};
   openForm({title:isNew?t('new_truck'):x.plate,values:v,del:!isNew&&can('*'),
    fields:[{k:'plate',l:t('plate'),req:true},{k:'make',l:t('make')},{k:'model',l:t('model')},{k:'year',l:t('year'),type:'number'},{k:'vin',l:t('vin'),full:true},
     {k:'trailer',l:t('trailer'),type:'select',opts:keyOpts(['tr_flat','tr_curtain','tr_reefer','tr_tipper','tr_tanker']),empty:false},{k:'cap',l:t('capacity'),type:'number',min:0},
     {k:'odo',l:t('odometer'),type:'number',min:0,req:true},{k:'status',l:t('status'),type:'select',opts:keyOpts(['ts_available','ts_trip','ts_maint','ts_stopped']),empty:false},
     {k:'doc_istimara',l:t('istimara')+' · '+t('expiry'),type:'date'},{k:'doc_insurance',l:t('insurance')+' · '+t('expiry'),type:'date'},
     {k:'doc_inspection',l:t('inspection')+' · '+t('expiry'),type:'date'},{k:'doc_opcard',l:t('opcard')+' · '+t('expiry'),type:'date'},
-    {k:'insAnnual',l:t('ins_annual'),type:'number',min:0},{k:'own',l:t('ownership'),type:'select',opts:keyOpts(['own_cash','own_loan']),empty:false},
+    {k:'since',l:t('cost_since'),type:'month',hint:t('cost_since_hint')},{k:'insAnnual',l:t('ins_annual'),type:'number',min:0},{k:'own',l:t('ownership'),type:'select',opts:keyOpts(['own_cash','own_loan']),empty:false},
     {k:'installment',l:t('installment'),type:'number',min:0,show:f=>f.own==='own_loan'},
     {k:'serviceEvery',l:t('service_every'),type:'number',min:0},{k:'lastService',l:t('last_service'),type:'number',min:0}],
    onDel:()=>{if(S.trips.some(p=>p.truckId===x.id))return t('not_allowed');S.trucks=S.trucks.filter(y=>y.id!==x.id);ui.stack=[]},
@@ -1379,7 +1383,7 @@ document.addEventListener('change',async e=>{const el=e.target;
   if(el.dataset.photo){const file=el.files&&el.files[0];if(!file)return;const data=await shrink(file);if(!data)return;const id='ph_'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
     if(!idb)await idbOpen();await photoPut(id,data);photoCache[id]=data;ui.form[el.dataset.photo]=id;renderSheet();return}
   if(el.hasAttribute('data-restore')){const file=el.files&&el.files[0];if(!file)return;try{const j=JSON.parse(await file.text());if(j.app!=='naql'||!j.S||!j.S.trips)throw 0;
-    S=j.S;save();if(j.photos)for(const id in j.photos)if(j.photos[id])await photoPut(id,j.photos[id]);toast(t('import_done'));render()}catch(x){toast(t('import_bad'),'bad')}}});
+    S=j.S;migrate();save();if(j.photos)for(const id in j.photos)if(j.photos[id])await photoPut(id,j.photos[id]);toast(t('import_done'));render()}catch(x){toast(t('import_bad'),'bad')}}});
 
 /* ---------- boot ---------- */
 load();idbOpen().then(()=>render());render();
