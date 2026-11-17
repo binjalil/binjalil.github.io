@@ -652,6 +652,22 @@ cloud|السيرفر والمزامنة|Server & sync|سرور اور ہم آہ�
 last_sync|آخر مزامنة|Last sync|آخری ہم آہنگی|अंतिम सिंक|শেষ সিঙ্ক
 sync_now|مزامنة الآن|Sync now|ابھی ہم آہنگ کریں|अभी सिंक करें|এখন সিঙ্ক
 synced_pending|{n} بانتظار الرفع|{n} waiting to upload|{n} اپلوڈ کے منتظر|{n} अपलोड बाकी|{n} আপলোডের অপেক্ষায়
+maint_log|صيانة الراس والسطحة|Tractor & trailer maintenance|ہیڈ اور ٹریلر کی مرمت|हेड और ट्रेलर रखरखाव|হেড ও ট্রেলার রক্ষণাবেক্ষণ
+maint_new|صيانة جديدة|New maintenance|نئی مرمت|नया रखरखाव|নতুন রক্ষণাবেক্ষণ
+maint_month|صيانة هذا الشهر|This month's maintenance|اس ماہ کی مرمت|इस महीने का रखरखाव|এই মাসের রক্ষণাবেক্ষণ
+maint_part|القطعة|Part|حصہ|भाग|অংশ
+head|الراس|Tractor (head)|ہیڈ|हेड|হেড
+trailer_part|السطحة|Trailer|ٹریلر|ट्रेलर|ট্রেলার
+workshop|الورشة|Workshop|ورکشاپ|वर्कशॉप|ওয়ার্কশপ
+invoice_photo|صورة الفاتورة|Invoice photo|انوائس کی تصویر|बिल की फोटो|ইনভয়েসের ছবি
+mt_service|غيار زيت وصيانة دورية|Oil change & service|آئل چینج اور سروس|तेल बदलना और सर्विस|তেল পরিবর্তন ও সার্ভিস
+mt_tyres|كفرات|Tyres|ٹائر|टायर|টায়ার
+mt_brakes|فرامل|Brakes|بریک|ब्रेक|ব্রেক
+mt_engine|مكينة|Engine|انجن|इंजन|ইঞ্জিন
+mt_gear|قير ودفرنس|Gearbox & differential|گیئر اور ڈفرنشل|गियर और डिफरेंशियल|গিয়ার ও ডিফারেনশিয়াল
+mt_electric|كهرباء|Electrical|بجلی|बिजली|বৈদ্যুতিক
+mt_body|سمكرة ولحام|Body & welding|باڈی اور ویلڈنگ|बॉडी और वेल्डिंग|বডি ও ওয়েল্ডিং
+mt_other|أخرى|Other|دیگر|अन्य|অন্যান্য
 `;
 const T={};
 for(const line of DICT.trim().split('\n')){const p=line.split('|');T[p[0]]=p.slice(1)}
@@ -662,7 +678,7 @@ function t(k,v){const r=T[k];let s=r?(r[LIDX[LANG]]||r[1]||r[0]):k;if(v)for(cons
 /* ---------- cloud sync (Supabase over plain REST, no library) ---------- */
 const SB_URL='https://nonpsctgviqhnvarkquu.supabase.co',SB_KEY='sb_publishable_sDpPkr_B0MGJ5He0AblgmQ_VHttmBxT';
 const SB_SES='naql-sb',SB_SYNC='naql-synced',SB_PHQ='naql-phq';
-const COLLS=['users','drivers','trucks','clients','routes','trips','fixed','driverTx','tyres','depts'];
+const COLLS=['users','drivers','trucks','clients','routes','trips','fixed','driverTx','tyres','maint','depts'];
 const CL={on:true,ses:null,ready:false,loading:false,last:null,lastTs:null,synced:{},pending:{},profiles:{},dirty:false,offline:false,timer:null,busy:false,phq:[]};
 const email=(id,gen)=>`${id}.${gen||1}@binjalil.app`;
 function h32(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return (h>>>0).toString(36)+s.length.toString(36)}
@@ -780,7 +796,10 @@ async function clSetup(){const v=k=>(($('#'+k)||{}).value||'').trim(),co=v('su-c
   if(pw.length<6)return toast(t('pw_rule'),'bad');if(pw!==pw2)return toast(t('pw_mismatch'),'bad');
   try{toast(t('uploading'));if(co)S.settings.company=co;
     let u=S.users.find(x=>x.idNo===id);if(!u){u={id:uid('u'),name:nm,role:'manager',idNo:id,phone:mob};S.users.push(u)}else Object.assign(u,{name:nm,role:'manager',phone:mob});
-    await sbSignUp(email(id,1),pw);await rpc('setup_manager',{p_id:id,p_rec:u.id,p_name:nm});
+    try{await sbSignUp(email(id,1),pw)}catch(e){if(!/registered|exists/i.test(e.message))throw e;await sbSignIn(email(id,1),pw)}
+    // a retry after a half-finished setup: the manager account may already be there
+    if(await rpc('has_accounts')){$('#toast').hidden=true;return clStart()}
+    await rpc('setup_manager',{p_id:id,p_rec:u.id,p_name:nm});
     for(const l of S.log)if(!l.id)l.id=uid('l');
     CL.ready=true;CL.synced={};clQueue();clearTimeout(CL.timer);await clFlush();
     // accounts for staff and drivers already on this phone (they get new activation codes)
@@ -879,6 +898,7 @@ function migrate(){let ch=false;const ids={u1:'1012345678',u2:'1023456789',u3:'2
   for(const u of S.users){if(!u.idNo){u.idNo=ids[u.id]||'';ch=true}if(u.phone===undefined){u.phone='';ch=true}}
   for(const d of S.drivers){if(!d.pin){d.pin='1234';ch=true}}
   for(const p of S.trips){if(p.status==='scheduled'){p.status='accepted';ch=true}if(!p.events){p.events=[];ch=true}for(const k of['loadDocs','cargoPhotos','unloadDocs'])if(!p[k]){p[k]=[];ch=true}}
+  if(!S.maint){S.maint=[];ch=true}
   if(!S.depts||!S.depts.length){S.depts=DEPTS0.map(d=>({...d}));ch=true}
   for(const c of['trips','trucks','drivers','clients','routes'])for(const x of S[c])if(!x.dept){x.dept=S.depts[0].id;ch=true}
   for(const u of S.users)if(u.role!=='manager'&&!u.dept){u.dept=S.depts[0].id;ch=true}
@@ -890,7 +910,7 @@ function accountOf(ses){if(!ses)return null;return ses.role==='driver'?S.drivers
 const idKind=n=>/^1\d{9}$/.test(n)?'national_id':/^2\d{9}$/.test(n)?'iqama':null;
 function idTaken(n,exceptId){return S.users.some(u=>u.idNo===n&&u.id!==exceptId)||S.drivers.some(d=>d.idNo===n&&d.id!==exceptId)}
 const SETTINGS0={company:'مؤسسة بن جليل للنقليات',cr:'',vatNo:'',address:'',phone:'',vat:15,alertDays:30,dieselPrice:1.66};
-function emptyState(settings,users){return{v:2,clean2:true,seq:1000,settings:Object.assign({},SETTINGS0,settings||{}),users:users||[],trucks:[],drivers:[],driverTx:[],tyres:[],clients:[],routes:[],trips:[],fixed:[],log:[],depts:DEPTS0.map(d=>({...d}))}}
+function emptyState(settings,users){return{v:2,clean2:true,seq:1000,settings:Object.assign({},SETTINGS0,settings||{}),users:users||[],trucks:[],drivers:[],driverTx:[],tyres:[],maint:[],clients:[],routes:[],trips:[],fixed:[],log:[],depts:DEPTS0.map(d=>({...d}))}}
 function clearPhotos(){try{if(idb)idb.transaction('p','readwrite').objectStore('p').clear();else indexedDB.deleteDatabase('naql-photos')}catch(e){}}
 async function hashPw(pw,salt){const enc=new TextEncoder();
   if(!(window.crypto&&crypto.subtle)){let h=0;for(const c of salt+pw)h=(h*31+c.charCodeAt(0))|0;return 'w'+h}
@@ -954,13 +974,16 @@ const monthFactor=m=>1;
 function truckFixed(id,m){const trk=byId('trucks',id);if(!trk)return 0;const n=Math.max(1,S.trucks.filter(x=>x.status!=='ts_stopped').length);
   return r2(monthFactor(m)*((!trk.since||m>=trk.since?truckAutoFixed(trk):0)+sum(S.fixed.filter(f=>f.month===m&&f.truckId===id),f=>f.amount)+sum(S.fixed.filter(f=>f.month===m&&!f.truckId),f=>f.amount)/n))}
 function monthFixed(m){return r2(sum(DS.trucks.filter(x=>x.status!=='ts_stopped'||S.fixed.some(f=>f.truckId===x.id&&f.month===m)),x=>truckFixed(x.id,m)))}
+const MT_TYPES=['mt_service','mt_tyres','mt_brakes','mt_engine','mt_gear','mt_electric','mt_body','mt_other'];
+const maintIn=(m,id)=>(S.maint||[]).filter(x=>monthOf(x.date)===m&&(id?x.truckId===id:DS.trucks.some(k=>k.id===x.truckId)));
+const truckMaint=(id,m)=>r2(sum(maintIn(m,id),x=>+x.cost||0));
 const tripsIn=(m,f)=>DS.trips.filter(p=>isLive(p)&&monthOf(p.loadDate)===m&&(!f||f(p)));
 function fixedShare(p){if(!p.truckId||!isLive(p))return 0;const m=monthOf(p.loadDate);const n=tripsIn(m,x=>x.truckId===p.truckId).length;return n?r2(truckFixed(p.truckId,m)/n):0}
 const tripProfit=p=>r2(p.price-tripExp(p)-fixedShare(p));
 const tripKm=p=>(+p.odoEnd>0&&+p.odoStart>=0&&+p.odoEnd>=+p.odoStart)?(+p.odoEnd-+p.odoStart):0;
 const clientBalance=id=>r2(sum(DS.trips.filter(p=>p.clientId===id&&p.status==='delivered'),tripDue));
 function dueDateOf(p){const c=byId('clients',p.clientId);const base=(p.arrive||p.loadDate||'').slice(0,10);return addDays(base,c&&c.terms==='t_credit'?(+c.days||0):3)}
-function monthStats(m){const ps=tripsIn(m);const rev=sum(ps,p=>p.price),vexp=sum(ps,tripExp),fx=monthFixed(m);return{trips:ps.length,rev:r2(rev),vexp:r2(vexp),fixed:fx,net:r2(rev-vexp-fx)}}
+function monthStats(m){const ps=tripsIn(m);const rev=sum(ps,p=>p.price),vexp=sum(ps,tripExp)+sum(maintIn(m),x=>+x.cost||0),fx=monthFixed(m);return{trips:ps.length,rev:r2(rev),vexp:r2(vexp),fixed:fx,net:r2(rev-vexp-fx)}}
 
 /* ---------- alerts ---------- */
 function alerts(){const out=[],T0=today(),lim=+S.settings.alertDays||30;
@@ -1132,6 +1155,15 @@ function truckForm(x){if(!guard('fleet'))return;const isNew=!x;
      if(isNew){const n={id:uid('t'),dept:defDept(),...v,docs};if(n.lastService==='')n.lastService=n.odo;S.trucks.push(n);log(`+ ${t('truck')} ${n.plate}`)}else{Object.assign(x,v,{docs});log(`${t('edit')} ${t('truck')} ${x.plate}`)}}})}
 
 function accBox(a,type){return`<div class="note spread"><span>${esc(t('login_state'))}: ${pill(accState(a),accState(a)==='acc_active'?'good':'warn')}</span><button class="btn ghost sm" data-act="acc-reset" data-type="${type}" data-id="${a.id}">${esc(t('reset_login'))}</button></div>`}
+function maintForm(trk,x){if(!can('fleet')&&!can('expenses'))return toast(t('not_allowed'),'bad');const isNew=!x;
+  openForm({title:isNew?t('maint_new')+' · '+trk.plate:t(x.type),values:x?{...x}:{part:'head',type:'mt_service',date:today(),odo:trk.odo},del:!isNew&&(isMgr()||can('fleet')),
+   fields:[{k:'part',l:t('maint_part'),type:'select',opts:[['head',t('head')],['trailer',t('trailer_part')]],empty:false},{k:'type',l:t('ex_type'),type:'select',opts:MT_TYPES.map(k=>[k,t(k)]),empty:false},
+    {k:'date',l:t('date'),type:'date',req:true},{k:'cost',l:t('amount'),type:'number',req:true,min:0},{k:'odo',l:t('odometer'),type:'number',min:0},{k:'workshop',l:t('workshop')},
+    {k:'note',l:t('notes'),type:'textarea',full:true},{k:'photos',l:t('invoice_photo'),type:'photos',full:true}],
+   onDel:()=>{S.maint=S.maint.filter(y=>y.id!==x.id)},
+   onSave:v=>{if(isNew)S.maint.push({id:uid('m'),truckId:trk.id,dept:trk.dept,...v});else Object.assign(x,v);
+     if(+v.odo>(+trk.odo||0))trk.odo=+v.odo;if(v.type==='mt_service'&&v.part==='head'&&+v.odo)trk.lastService=+v.odo;
+     log(`${t('maint_log')}: ${trk.plate} · ${t(v.type)} · ${nf(v.cost,0)}`)}})}
 function driverForm(x){if(!guard('fleet'))return;const isNew=!x;
   openForm({title:isNew?t('new_driver'):x.name,extra:x?()=>accBox(x,'drivers'):null,values:x?{...x}:{mode:'em_trip',status:'ds_active'},del:!isNew&&can('*'),
    fields:[...deptFld(),{k:'name',l:t('name'),req:true,full:true},{k:'idNo',l:t('id_or_iqama'),req:true,type:'tel'},{k:'phone',l:t('phone'),type:'tel',req:true},{k:'idExp',l:t('id_exp'),type:'date'},{k:'licExp',l:t('lic_exp'),type:'date'},
@@ -1388,9 +1420,9 @@ V.fleet=()=>{const ft=ui.fleetTab;let body='',add='';
   ${can('fleet')?`<button class="fab" data-act="${add}" aria-label="${esc(t('add'))}">${IC.plus}</button>`:''}`};
 
 V.truck=id=>{const x=byId('trucks',id);if(!x)return gone();const m=ui.month,ps=tripsIn(m,p=>p.truckId===id),T0=today();
-  const rev=sum(ps,p=>p.price),ex=sum(ps,tripExp),fx=truckFixed(id,m),km=sum(ps,tripKm),lit=sum(ps,p=>sum(p.expenses.filter(e=>e.type==='ex_diesel'),e=>e.liters||0));
+  const mt=truckMaint(id,m),rev=sum(ps,p=>p.price),ex=sum(ps,tripExp)+mt,fx=truckFixed(id,m),km=sum(ps,tripKm),lit=sum(ps,p=>sum(p.expenses.filter(e=>e.type==='ex_diesel'),e=>e.liters||0));
   const docRow=k=>{const d=x.docs&&x.docs[k];const n=d?daysBetween(T0,d):null;return`<dt>${esc(t(k))}</dt><dd>${d?fdate(d):'—'} ${n!==null&&n<=(+S.settings.alertDays||30)?pill(n<0?'expired':'expiry',n<0?'bad':'warn'):''}</dd>`};
-  return bar(x.plate,`${x.make} ${x.model} ${x.year||''}`,can('fleet')?`<button class="iconbtn" data-act="truck-edit" aria-label="${esc(t('edit'))}">${IC.wrench}</button>`:'')+`<main class="stack">
+  return bar(x.plate,[x.make,x.model,x.year].filter(Boolean).join(' '),can('fleet')?`<button class="iconbtn" data-act="truck-edit" aria-label="${esc(t('edit'))}">${IC.wrench}</button>`:'')+`<main class="stack">
   <div class="row"><input type="month" class="search" style="max-width:200px" value="${m}" data-ch="month" aria-label="${esc(t('month'))}">${pill(x.status,TRUCK_ST[x.status])}</div>
   <div class="kpis"><div class="kpi"><div class="l">${esc(t('trips_count'))}</div><div class="v">${int(ps.length)}</div></div>${can('finance')?`<div class="kpi"><div class="l">${esc(t('net_profit'))}</div><div class="v ${rev-ex-fx<0?'negv':''}">${int(rev-ex-fx)} <small>${t('sar')}</small></div></div>
    <div class="kpi"><div class="l">${esc(t('revenue'))}</div><div class="v">${int(rev)} <small>${t('sar')}</small></div></div><div class="kpi"><div class="l">${esc(t('var_costs'))}</div><div class="v">${int(ex)} <small>${t('sar')}</small></div></div>
@@ -1399,6 +1431,8 @@ V.truck=id=>{const x=byId('trucks',id);if(!x)return gone();const m=ui.month,ps=t
   ${sec(t('general_info'),`<div class="card stack"><dl class="kv"><dt>${esc(t('trailer'))}</dt><dd>${esc(t(x.trailer))}</dd><dt>${esc(t('capacity'))}</dt><dd class="num">${esc(x.cap||'—')}</dd><dt>${esc(t('odometer'))}</dt><dd>${int(x.odo)}</dd>
    <dt>${esc(t('service_every'))}</dt><dd>${int(x.serviceEvery||0)} · ${esc(t('last_service'))} ${int(x.lastService||0)}</dd><dt>${esc(t('ownership'))}</dt><dd>${esc(t(x.own))}${x.own==='own_loan'?' · '+money(x.installment):''}</dd><dt>${esc(t('ins_annual'))}</dt><dd>${money(x.insAnnual)}</dd>
    <dt>${esc(t('drivers'))}</dt><dd>${esc(truckDrivers(id).map(d=>d.name).join('، ')||'—')}</dd></dl>${can('fleet')?`<button class="btn sec sm" data-act="truck-service">${IC.wrench}${esc(t('record_service'))}</button>`:''}</div>`)}
+  ${(()=>{const ms=(S.maint||[]).filter(y=>y.truckId===id).sort((a,b)=>a.date<b.date?1:-1),inM=ms.filter(y=>monthOf(y.date)===m);
+    return sec(t('maint_log'),`${inM.length?`<p class="muted small" style="margin:0 0 6px">${esc(t('maint_month'))}: <b class="num">${money(mt)}</b> · ${esc(t('head'))} <span class="num">${nf(sum(inM.filter(y=>y.part==='head'),y=>+y.cost||0),0)}</span> · ${esc(t('trailer_part'))} <span class="num">${nf(sum(inM.filter(y=>y.part==='trailer'),y=>+y.cost||0),0)}</span></p>`:''}<div class="list">${ms.slice(0,30).map(y=>`<button class="item" data-act="maint-edit" data-id="${y.id}"><span class="ic">${IC.wrench}</span><span class="t"><b>${esc(t(y.type))} · ${esc(t(y.part==='trailer'?'trailer_part':'head'))}</b><span>${fdate(y.date)}${y.workshop?' · '+esc(y.workshop):''}</span></span><b class="num">${nf(y.cost,0)}</b></button>`).join('')||emptyBox()}</div>`,can('fleet')||can('expenses')?`<button class="btn sec sm" data-act="maint-new">${IC.plus}${esc(t('add'))}</button>`:'')})()}
   ${sec(t('trips'),ps.length?`<div class="list">${ps.slice().reverse().map(tripItem).join('')}</div>`:emptyBox())}
   ${sec(t('tyres'),`<div class="list">${S.tyres.filter(y=>y.truckId===id).map(y=>`<button class="item" data-act="tyre-edit" data-id="${y.id}"><span class="ic">${IC.tyre}</span><span class="t"><b>${esc(y.pos)}</b><span>${esc(y.brand||'')} · <span class="num">${nf(Math.max(0,(+x.odo)-(+y.odo||0)),0)}</span> ${t('km')}</span></span>${pill(y.status,y.status==='ty_ok'?'good':y.status==='ty_repaired'?'warn':'bad')}</button>`).join('')||emptyBox()}</div>`,can('fleet')?`<button class="btn sec sm" data-act="tyre-new" data-id="${id}">${IC.plus}${esc(t('add'))}</button>`:'')}
   </main>`};
@@ -1444,7 +1478,7 @@ V.fixed=()=>{const m=ui.month,list=S.fixed.filter(f=>f.month===m);
 V.reports=()=>{const m=ui.month,st=monthStats(m),ps=tripsIn(m),rt=ui.repTab;
   const groups={truck:[DS.trucks,x=>x.plate,(x,p)=>p.truckId===x.id],driver:[DS.drivers,x=>x.name,(x,p)=>p.driverId===x.id],client:[DS.clients,x=>x.name,(x,p)=>p.clientId===x.id],route:[DS.routes,x=>x.from+' - '+x.to,(x,p)=>p.routeId===x.id]};
   const [arr,name,match]=groups[rt];
-  const rows=arr.map(x=>{const q=ps.filter(p=>match(x,p));const rev=sum(q,p=>p.price),ex=sum(q,tripExp),fx=rt==='truck'?truckFixed(x.id,m):sum(q,fixedShare),km=sum(q,tripKm),lit=sum(q,p=>sum(p.expenses.filter(e=>e.type==='ex_diesel'),e=>e.liters||0));
+  const rows=arr.map(x=>{const q=ps.filter(p=>match(x,p));const rev=sum(q,p=>p.price),ex=sum(q,tripExp)+(rt==='truck'?truckMaint(x.id,m):0),fx=rt==='truck'?truckFixed(x.id,m):sum(q,fixedShare),km=sum(q,tripKm),lit=sum(q,p=>sum(p.expenses.filter(e=>e.type==='ex_diesel'),e=>e.liters||0));
     return{n:name(x),trips:q.length,km,rev,ex,fx,net:rev-ex-fx,l100:km?lit/km*100:0,due:rt==='client'?clientBalance(x.id):null}}).filter(r=>r.trips||r.fx);
   ui._rep=rows;
   const cols=[['n',t(rt==='truck'?'truck':rt==='driver'?'driver':rt==='client'?'client':'route')],['trips',t('trips_count')],['km',t('km_total')],['rev',t('revenue')],['ex',t('var_costs')],['fx',t('fixed_costs')],['net',t('net_profit')]];
@@ -1562,6 +1596,8 @@ const ACT={
  'trip-new':()=>tripForm(null),
  'trip-edit':()=>tripForm(byId('trips',cur().id)),
  'trip-do':id=>tripAction(byId('trips',cur().id),id),
+ 'maint-new':()=>{const trk=byId('trucks',cur().id);if(trk)maintForm(trk,null)},
+ 'maint-edit':id=>{const x=(S.maint||[]).find(y=>y.id===id);const trk=x&&byId('trucks',x.truckId);if(trk)maintForm(trk,x)},
  'exp-new':()=>expenseForm(byId('trips',cur().id)),
  'exp-edit':id=>{const p=byId('trips',cur().id),ex=p.expenses.find(e=>e.id===id);if(p.confirmed&&!isMgr())return;if(!can('expenses')&&!(isDriver()&&ex&&ex.by===SES.name))return;expenseForm(p,p.expenses.find(e=>e.id===id))},
  'pay-new':()=>paymentForm(byId('trips',cur().id)),
