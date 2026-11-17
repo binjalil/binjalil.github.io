@@ -668,6 +668,7 @@ mt_gear|قير ودفرنس|Gearbox & differential|گیئر اور ڈفرنشل|
 mt_electric|كهرباء|Electrical|بجلی|बिजली|বৈদ্যুতিক
 mt_body|سمكرة ولحام|Body & welding|باڈی اور ویلڈنگ|बॉडी और वेल्डिंग|বডি ও ওয়েল্ডিং
 mt_other|أخرى|Other|دیگر|अन्य|অন্যান্য
+sync_refused|السيرفر رفض بعض التعديلات، سجّل خروج وادخل من جديد|The server refused some changes; sign out and sign in again|سرور نے کچھ تبدیلیاں رد کیں، دوبارہ لاگ ان کریں|सर्वर ने कुछ बदलाव अस्वीकार किए, फिर से लॉगिन करें|সার্ভার কিছু পরিবর্তন প্রত্যাখ্যান করেছে, আবার লগইন করুন
 `;
 const T={};
 for(const line of DICT.trim().split('\n')){const p=line.split('|');T[p[0]]=p.slice(1)}
@@ -724,7 +725,8 @@ async function clFlush(){if(CL.busy||!CL.ses)return;const keys=Object.keys(CL.pe
   try{for(let i=0;i<keys.length;i+=200){const ks=keys.slice(i,i+200);
       try{await send(ks)}catch(e){if(e.offline||e.status>=500||e.status===401)throw e;
         // a row this account may not write: send one by one and drop the refused ones
-        for(const k of ks){try{await send([k])}catch(e2){if(e2.offline)throw e2;const r=CL.pending[k];if(r&&!r.deleted)CL.synced[k]=r._h;else delete CL.synced[k];delete CL.pending[k]}}}}
+        for(const k of ks){try{await send([k])}catch(e2){if(e2.offline)throw e2;const r=CL.pending[k];if(r&&!r.deleted)CL.synced[k]=r._h;else delete CL.synced[k];delete CL.pending[k];CL.refused=(CL.refused||0)+1}}}}
+    if(CL.refused&&isMgr()){toast(t('sync_refused'),'bad');CL.refused=0}
     CL.last=Date.now()}
   catch(e){setTimeout(clFlush,e.offline?15000:5000)}
   finally{CL.busy=false;clStore()}}
@@ -745,7 +747,7 @@ async function clPull(full){if(!CL.ses)return false;const since=full||!CL.lastTs
     if(!COLLS.includes(r.coll))continue;const arr=S[r.coll]||(S[r.coll]=[]);const i=arr.findIndex(x=>x.id===r.id);
     if(r.deleted){if(i>=0)arr.splice(i,1);delete CL.synced[k];continue}
     if(i>=0)arr[i]=r.data;else arr.push(r.data);CL.synced[k]=hh}
-  if(changed){S.log.sort((a,b)=>a.at<b.at?1:-1);S.log.length=Math.min(S.log.length,300);try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+  if(changed){S.log.sort((a,b)=>a.at<b.at?1:-1);if(S.depts)S.depts.sort((a,b)=>a.id<b.id?-1:1);S.log.length=Math.min(S.log.length,300);try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
   clStore();return changed}
 
 async function clProfiles(){if(!isMgr())return;try{const ps=await sbFetch('/rest/v1/profiles?select=id_no,auth_id,act_code,role,dept,kind,rec_id');CL.profiles={};for(const p of ps||[])CL.profiles[p.id_no]=p}catch(e){}}
