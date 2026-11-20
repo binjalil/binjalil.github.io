@@ -669,6 +669,13 @@ mt_electric|كهرباء|Electrical|بجلی|बिजली|বৈদ্যু�
 mt_body|سمكرة ولحام|Body & welding|باڈی اور ویلڈنگ|बॉडी और वेल्डिंग|বডি ও ওয়েল্ডিং
 mt_other|أخرى|Other|دیگر|अन्य|অন্যান্য
 sync_refused|السيرفر رفض بعض التعديلات، سجّل خروج وادخل من جديد|The server refused some changes; sign out and sign in again|سرور نے کچھ تبدیلیاں رد کیں، دوبارہ لاگ ان کریں|सर्वर ने कुछ बदलाव अस्वीकार किए, फिर से लॉगिन करें|সার্ভার কিছু পরিবর্তন প্রত্যাখ্যান করেছে, আবার লগইন করুন
+push_on|تفعيل التنبيهات|Enable notifications
+push_note|فعّل التنبيهات عشان يوصلك إشعار بالحمولات الجديدة وكل تحديث عليها، حتى لو التطبيق مقفول.|Turn on notifications to be alerted about new loads and every update, even when the app is closed.
+push_ios|عشان تصلك التنبيهات على الآيفون: اضغط زر المشاركة ⬆️ تحت، ثم «إضافة إلى الشاشة الرئيسية»، وافتح التطبيق من الأيقونة.|To get notifications on iPhone: tap Share ⬆️, then “Add to Home Screen”, and open the app from the icon.
+push_denied|التنبيهات مقفلة لهذا التطبيق. افتح إعدادات الجوال وفعّل الإشعارات.|Notifications are blocked. Enable them in your phone settings.
+push_done|تم تفعيل التنبيهات ✅|Notifications enabled ✅
+push_fail|ما قدرنا نفعّل التنبيهات، حاول مرة ثانية|Couldn't enable notifications, try again
+push_test|إرسال تنبيه تجريبي|Send test notification
 `;
 const T={};
 for(const line of DICT.trim().split('\n')){const p=line.split('|');T[p[0]]=p.slice(1)}
@@ -774,7 +781,7 @@ async function clStart(){CL.loading=true;render();
     const full=!CL.ready||!CL.lastTs;CL.ready=true;await clPull(full);
     const a=(p.role==='driver'?S.drivers:S.users).find(x=>x.id===p.rec_id);
     SES={id:p.rec_id,name:(a&&a.name)||p.name||'',role:p.role};try{localStorage.setItem(SES_KEY,JSON.stringify(SES))}catch(e){}
-    migrate();await clProfiles();CL.loading=false;ui.tab='home';ui.stack=[];render();clQueue();phFlush()}
+    migrate();await clProfiles();CL.loading=false;ui.tab='home';ui.stack=[];render();clQueue();phFlush();pushEnsure()}
   catch(e){CL.loading=false;if(e.offline&&SES){CL.ready=true;render();return}toast(e.offline?t('offline'):t('server_err'),'bad');render()}}
 async function clTick(){if(!CL.ses||!CL.ready||CL.loading||document.hidden)return;try{await clFlush();const ch=await clPull(false);if(ch){if(ui.sheet||ui.confirm)CL.dirty=true;else render()}}catch(e){}}
 setInterval(()=>{if(CL.dirty&&!ui.sheet&&!ui.confirm){CL.dirty=false;render()}},1500);
@@ -820,6 +827,26 @@ async function clSetup(){const v=k=>(($('#'+k)||{}).value||'').trim(),co=v('su-c
 function clAccount(a,kind,oldId){if(!CL.ready)return;const code=a._newCode||null;delete a._newCode;
   rpc('save_account',{p_id:a.idNo,p_old_id:oldId||null,p_kind:kind,p_rec:a.id,p_role:kind==='driver'?'driver':a.role,p_dept:kind==='driver'?(a.dept||defDept()):(a.role==='manager'?'all':(a.dept||defDept())),p_name:a.name,p_code:code})
    .then(clProfiles).then(()=>{if(!ui.sheet)render()}).catch(e=>toast(t('server_err')+' ('+e.message+')','bad'))}
+
+/* ---- push notifications ---- */
+const VAPID_PUB='BArLih2HzabUWVV5IvJzQi1Un6j4RkAgoSgyHKFNbfZaS19f9k3wa1u6iCiTUkGBGS5v2BPSMB47eJ33J0d3jVg';
+const PUSH_KEY='naql-push';
+const isIOS=()=>/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+const standalone=()=>window.matchMedia&&matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+const pushOK=()=>'serviceWorker' in navigator&&'PushManager' in window&&'Notification' in window;
+function pushMine(){try{const x=JSON.parse(localStorage.getItem(PUSH_KEY)||'null');return x&&CL.ses&&x.uid===CL.ses.uid?x:null}catch(e){return null}}
+function pushState(){if(!CL.on||!CL.ses)return'off';if(!pushOK())return isIOS()&&!standalone()?'ios':'off';
+  if(Notification.permission==='denied')return'denied';if(Notification.permission==='granted'&&pushMine())return'on';return'ask'}
+function u8(b){b=b.replace(/-/g,'+').replace(/_/g,'/');while(b.length%4)b+='=';const r=atob(b);return Uint8Array.from(r,c=>c.charCodeAt(0))}
+async function pushSubscribe(){const reg=await navigator.serviceWorker.ready;let sub=await reg.pushManager.getSubscription();
+  if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:u8(VAPID_PUB)});
+  const j=sub.toJSON();await rpc('push_sub',{ep:j.endpoint,k:j.keys.p256dh,a:j.keys.auth});
+  try{localStorage.setItem(PUSH_KEY,JSON.stringify({uid:CL.ses.uid,ep:j.endpoint}))}catch(e){}return true}
+async function pushEnable(){try{const p=await Notification.requestPermission();if(p!=='granted'){render();return toast(t(p==='denied'?'push_denied':'push_fail'),'bad')}
+  await pushSubscribe();toast(t('push_done'));render()}catch(e){toast(t('push_fail'),'bad');render()}}
+// keep the subscription linked to whoever is logged in on this phone
+async function pushEnsure(){try{if(pushOK()&&CL.ses&&Notification.permission==='granted')await pushSubscribe()}catch(e){}}
+async function pushOff(){try{const x=JSON.parse(localStorage.getItem(PUSH_KEY)||'null');if(x&&CL.ses)await rpc('push_unsub',{ep:x.ep});localStorage.removeItem(PUSH_KEY)}catch(e){}}
 
 /* ===== Load Manager — single-page app (state in localStorage, photos in IndexedDB) ===== */
 const KEY='naql-demo-v1',SES_KEY='naql-session',PREF_KEY='naql-prefs';
@@ -1233,7 +1260,7 @@ function tripAction(p,act){
   if(act==='status'||act==='delete'){if(!guard('*'))return}else if(!guard('trips'))return;
   if(act==='send'){openForm({title:t('act_send')+' · #'+p.no,values:{driverId:p.driverId||'',truckId:p.truckId||''},
      fields:[{k:'driverId',l:t('driver'),type:'select',opts:driverOpts(),req:true,full:true,onch:f=>{const d=byId('drivers',f.driverId);if(d&&d.truckId)f.truckId=d.truckId}},{k:'truckId',l:t('truck'),type:'select',opts:truckOpts(),req:true,full:true}],
-     onSave:v=>{Object.assign(p,v,{status:'sent',lastReject:''});addEv(p,'sent',{n:driverName(v.driverId)});log(`${t('ev_sent',{n:driverName(v.driverId)})} · ${t('trip')} ${p.no}`)}});return}
+     onSave:v=>{Object.assign(p,v,{status:'sent',lastReject:'',rejBy:''});addEv(p,'sent',{n:driverName(v.driverId)});log(`${t('ev_sent',{n:driverName(v.driverId)})} · ${t('trip')} ${p.no}`)}});return}
   if(act==='cancel'){ui.confirm={msg:t('act_cancel')+' #'+p.no,ok:t('act_cancel'),fn:()=>{p.status='cancelled';addEv(p,'cancelled');const trk=byId('trucks',p.truckId);if(trk&&trk.status==='ts_trip')trk.status='ts_available';log(`${t('st_cancelled')} ${p.no}`)}};render();return}
   if(act==='status'){openForm({title:t('set_status')+' · #'+p.no,values:{status:p.status},fields:[{k:'status',l:t('status'),type:'select',opts:Object.keys(ST).map(k=>[k,t(ST[k][0])]),empty:false,full:true}],
      onSave:v=>{if(v.status!==p.status){p.status=v.status;addEv(p,'status',{s:v.status});log(`${t('set_status')} #${p.no}: ${t(ST[v.status][0])}`)}}});return}
@@ -1244,7 +1271,7 @@ function driverAction(p,act){const drv=isDriver();if(drv&&p.driverId!==SES.id)re
   const trk=byId('trucks',p.truckId);
   if(act==='accept'){ui.confirm={msg:t('act_accept')+' · #'+p.no,sub:`${p.from} ${arrow()} ${p.to}`,ok:t('act_accept'),kind:'good',fn:()=>{p.status='accepted';addEv(p,'accepted');log(`${t('ev_accepted')} · ${t('trip')} ${p.no}`)}};render();return}
   if(act==='reject'){openForm({title:t('act_reject')+' · #'+p.no,values:{},fields:[{k:'r',l:t('reject_reason'),type:'textarea',req:true}],okKind:'bad',ok:t('act_reject'),
-     onSave:v=>{addEv(p,'rejected',{r:v.r});p.lastReject=v.r;p.status='new';p.driverId='';log(`${t('ev_rejected',{r:v.r})} · ${t('trip')} ${p.no}`)}});return}
+     onSave:v=>{addEv(p,'rejected',{r:v.r});p.lastReject=v.r;p.status='new';p.rejBy=p.driverId;p.driverId='';log(`${t('ev_rejected',{r:v.r})} · ${t('trip')} ${p.no}`)}});return}
   if(act==='loaded'){openForm({title:t('act_loaded')+' · #'+p.no,values:{loadDocs:[],cargoPhotos:[],odoStart:trk?trk.odo:''},noFocus:true,
      fields:[{k:'loadDocs',l:t('docs_photos'),type:'photos',req:drv},{k:'cargoPhotos',l:t('cargo_photos'),type:'photos',req:drv},{k:'odoStart',l:t('odo_start'),type:'number',min:0}],
      onSave:v=>{Object.assign(p,{loadDocs:[...(p.loadDocs||[]),...v.loadDocs],cargoPhotos:[...(p.cargoPhotos||[]),...v.cargoPhotos],odoStart:v.odoStart,depart:nowISO(),status:'onroad'});if(trk)trk.status='ts_trip';addEv(p,'loaded');log(`${t('ev_loaded')} · ${t('trip')} ${p.no}`)}});return}
@@ -1300,7 +1327,12 @@ V.phone=()=>{const a=accountOf(SES);return`<div class="login"><div class="brand"
   <button class="link" data-act="logout">${esc(t('logout'))}</button></div>`};
 
 /* home: one per role */
-V.home=()=>isDriver()?V.driverHome():SES.role==='dispatcher'?V.dispHome():V.finHome();
+V.home=()=>{const h=isDriver()?V.driverHome():SES.role==='dispatcher'?V.dispHome():V.finHome();const c=pushCard();return c?h.replace('<main class="stack">','<main class="stack">'+c):h};
+function pushCard(){if(typeof pushState!=='function')return'';const st=pushState();
+  if(st==='ask')return`<div class="card stack"><div class="spread"><b>🔔 ${esc(t('push_on'))}</b></div><p class="muted small" style="margin:0">${esc(t('push_note'))}</p><button class="btn good" data-act="push-on">${esc(t('push_on'))}</button></div>`;
+  if(st==='ios')return`<div class="note">🔔 ${esc(t('push_ios'))}</div>`;
+  if(st==='denied')return`<div class="note bad">🔔 ${esc(t('push_denied'))}</div>`;
+  return''}
 function startCard(){if(!isMgr())return'';const steps=[['add_trucks',DS.trucks.length,'truck-new',IC.truck],['add_drivers',DS.drivers.length,'driver-new',IC.person],['add_clients',DS.clients.length,'client-new',IC.users],['add_routes',DS.routes.length,'route-new',IC.pin]];
   if(steps.every(x=>x[1]))return'';
   return sec(t('get_started'),`<div class="list">${steps.map(([l,n,a,ic])=>`<button class="item" data-act="${a}"><span class="ic" style="${n?'background:var(--good-soft);color:var(--good)':''}">${n?IC.check:ic}</span><span class="t"><b>${esc(t(l))}</b><span>${n?int(n):''}</span></span>${IC.plus.replace('<svg','<svg class="chev"')}</button>`).join('')}</div>`)}
@@ -1546,6 +1578,7 @@ function csv(name,head,rows){downloadText(name,'﻿'+[head,...rows].map(r=>r.map
 
 /* ---------- actions ---------- */
 const ACT={
+ 'push-on':()=>pushEnable(),
  'go':id=>go(id),'pop':()=>pop(),'push':(id,el)=>push(el.dataset.type,el.dataset.id),
  'open':(id,el)=>{if(el.dataset.type==='client'&&ui.tab!=='clients'&&!ui.stack.length)ui.tab='clients';push(el.dataset.type,id)},
  'lang':id=>{LANG=id;PREFS.lang=id;savePrefs();render();if(ui.sheet)renderSheet()},
@@ -1599,7 +1632,7 @@ const ACT={
  'drv-exp':id=>{const p=byId('trips',id);if(!p)return;ui.stack=[{type:'trip',id}];render();expenseForm(p)},
  'ph-del':(id,el)=>{const k=el.dataset.type;ui.form[k]=(ui.form[k]||[]).filter(x=>x!==id);renderSheet()},
  'lb-close':(id,el,e)=>{ui.lightbox=null;render()},
- 'logout':()=>{if(CL.on){sbSignOut();S=emptyState(S.settings);try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}clearPhotos()}SES=null;try{localStorage.removeItem(SES_KEY)}catch(e){}ui.loginUser=null;ui.stack=[];render()},
+ 'logout':async()=>{if(CL.on){await pushOff();sbSignOut();S=emptyState(S.settings);try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}clearPhotos()}SES=null;try{localStorage.removeItem(SES_KEY)}catch(e){}ui.loginUser=null;ui.stack=[];render()},
  'trips-filter':id=>{ui.filter=id;ui.tab='trips';ui.stack=[];render()},
  'trip-new':()=>tripForm(null),
  'trip-edit':()=>tripForm(byId('trips',cur().id)),
