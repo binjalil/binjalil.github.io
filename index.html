@@ -702,7 +702,7 @@ const rpc=(fn,args)=>sbFetch('/rest/v1/rpc/'+fn,{method:'POST',body:args||{}});
 async function sbSignIn(em,pw){const j=await sbFetch('/auth/v1/token?grant_type=password',{method:'POST',auth:false,body:{email:em,password:pw}});setSes(j)}
 async function sbSignUp(em,pw){const j=await sbFetch('/auth/v1/signup',{method:'POST',auth:false,body:{email:em,password:pw}});
   if(!j||!j.access_token){if(j&&j.id||j&&j.user)return sbSignIn(em,pw);throw new Error('no_session')}setSes(j)}
-function sbSignOut(){const s=CL.ses;CL.ses=null;CL.synced={};CL.lastTs=null;CL.pending={};CL.ready=false;clStore();if(s)fetch(SB_URL+'/auth/v1/logout',{method:'POST',headers:{apikey:SB_KEY,Authorization:'Bearer '+s.access_token}}).catch(()=>{})}
+function sbSignOut(){const s=CL.ses;CL.ses=null;CL.synced={};CL.seen=null;CL.lastTs=null;CL.pending={};CL.ready=false;clStore();if(s)fetch(SB_URL+'/auth/v1/logout',{method:'POST',headers:{apikey:SB_KEY,Authorization:'Bearer '+s.access_token}}).catch(()=>{})}
 
 /* ---- map the app state to rows ---- */
 const SECRET=['pwHash','pwSalt','actCode','fail','lockUntil'];
@@ -716,7 +716,12 @@ function rowsOf(){const out={};
 // find what changed since the last sync and queue it
 function clQueue(){if(!CL.ready)return;const rows=rowsOf();
   for(const k in rows){const js=JSON.stringify(rows[k].data),hh=h32(js);if(CL.synced[k]!==hh){rows[k]._h=hh;CL.pending[k]=rows[k]}}
-  for(const k in CL.synced)if(!rows[k]&&!k.startsWith('log/')&&!k.startsWith('meta/')&&!k.startsWith('settings/')){const [c,id]=k.split('/');CL.pending[k]={coll:c,id,dept:null,data:{id},deleted:true,_h:'x'}}
+  // a record is only deleted on the server when it disappeared from this running session (a real delete),
+  // never because the phone loaded old data; loads (trips) can only be deleted by the manager
+  for(const k in CL.synced)if(!rows[k]&&!k.startsWith('log/')&&!k.startsWith('meta/')&&!k.startsWith('settings/')){const [c,id]=k.split('/');
+    if(CL.seen&&CL.seen[k]&&(c!=='trips'||isMgr()))CL.pending[k]={coll:c,id,dept:null,data:{id},deleted:true,_h:'x'};
+    else{delete CL.synced[k];CL.lastTs=null}}
+  CL.seen={};for(const k in rows)CL.seen[k]=1;
   clearTimeout(CL.timer);CL.timer=setTimeout(clFlush,400)}
 async function clFlush(){if(CL.busy||!CL.ses)return;const keys=Object.keys(CL.pending);if(!keys.length)return;CL.busy=true;
   const send=async ks=>{const body=ks.map(k=>{const r=CL.pending[k];return{coll:r.coll,id:r.id,dept:r.dept,data:r.data,deleted:!!r.deleted}});
@@ -736,7 +741,7 @@ async function clPull(full){if(!CL.ses)return false;const since=full||!CL.lastTs
   let rows=[],off=0;
   for(;;){const q=`/rest/v1/records?select=coll,id,data,deleted,updated_at&order=updated_at.asc&limit=1000&offset=${off}`+(since?`&updated_at=gt.${encodeURIComponent(since)}`:'');
     const part=await sbFetch(q);rows=rows.concat(part||[]);if(!part||part.length<1000)break;off+=1000}
-  if(full){for(const c of COLLS)S[c]=[];S.log=[]}
+  let keep={};if(full){for(const c of COLLS){for(const x of (S[c]||[]))if(x&&CL.pending[c+'/'+x.id])keep[c+'/'+x.id]=x;S[c]=[]}S.log=[];for(const k in keep){const c=k.split('/')[0];S[c].push(keep[k])}}
   let changed=false;
   for(const r of rows){const k=r.coll+'/'+r.id;if(!CL.lastTs||r.updated_at>CL.lastTs)CL.lastTs=r.updated_at;
     if(CL.pending[k])continue; // our own unsent change wins
@@ -746,7 +751,7 @@ async function clPull(full){if(!CL.ses)return false;const since=full||!CL.lastTs
     if(r.coll==='log'){if(!S.log.some(l=>l.id===r.id))S.log.push(r.data);CL.synced[k]=hh;continue}
     if(!COLLS.includes(r.coll))continue;const arr=S[r.coll]||(S[r.coll]=[]);const i=arr.findIndex(x=>x.id===r.id);
     if(r.deleted){if(i>=0)arr.splice(i,1);delete CL.synced[k];continue}
-    if(i>=0)arr[i]=r.data;else arr.push(r.data);CL.synced[k]=hh}
+    if(i>=0)arr[i]=r.data;else arr.push(r.data);CL.synced[k]=hh;if(CL.seen)CL.seen[k]=1}
   if(changed){S.log.sort((a,b)=>a.at<b.at?1:-1);if(S.depts)S.depts.sort((a,b)=>a.id<b.id?-1:1);S.log.length=Math.min(S.log.length,300);try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
   clStore();return changed}
 
@@ -981,7 +986,7 @@ const maintIn=(m,id)=>(S.maint||[]).filter(x=>monthOf(x.date)===m&&(id?x.truckId
 const truckMaint=(id,m)=>r2(sum(maintIn(m,id),x=>+x.cost||0));
 const tripsIn=(m,f)=>DS.trips.filter(p=>isLive(p)&&monthOf(p.loadDate)===m&&(!f||f(p)));
 function fixedShare(p){if(!p.truckId||!isLive(p))return 0;const m=monthOf(p.loadDate);const n=tripsIn(m,x=>x.truckId===p.truckId).length;return n?r2(truckFixed(p.truckId,m)/n):0}
-const tripProfit=p=>r2(p.price-tripExp(p)-fixedShare(p));
+const tripProfit=p=>r2(p.price-tripExp(p)); // fixed costs are charged to the month, not to each trip
 const tripKm=p=>(+p.odoEnd>0&&+p.odoStart>=0&&+p.odoEnd>=+p.odoStart)?(+p.odoEnd-+p.odoStart):0;
 const clientBalance=id=>r2(sum(DS.trips.filter(p=>p.clientId===id&&p.status==='delivered'),tripDue));
 function dueDateOf(p){const c=byId('clients',p.clientId);const base=(p.arrive||p.loadDate||'').slice(0,10);return addDays(base,c&&c.terms==='t_credit'?(+c.days||0):3)}
@@ -1224,6 +1229,7 @@ function settingsForm(){if(!guard('*'))return;
 
 /* ---------- trip status actions ---------- */
 function tripAction(p,act){
+  if(act==='delete'&&!isMgr())return toast(t('not_allowed'),'bad');
   if(act==='status'||act==='delete'){if(!guard('*'))return}else if(!guard('trips'))return;
   if(act==='send'){openForm({title:t('act_send')+' · #'+p.no,values:{driverId:p.driverId||'',truckId:p.truckId||''},
      fields:[{k:'driverId',l:t('driver'),type:'select',opts:driverOpts(),req:true,full:true,onch:f=>{const d=byId('drivers',f.driverId);if(d&&d.truckId)f.truckId=d.truckId}},{k:'truckId',l:t('truck'),type:'select',opts:truckOpts(),req:true,full:true}],
@@ -1360,7 +1366,7 @@ function timeline(p){const ev=(p.events||[]).slice();
 V.trip=id=>{const p=byId('trips',id);if(!p)return gone();const drv=isDriver();if(drv&&p.driverId!==SES.id)return gone();
   const lock=!!p.confirmed&&!isMgr(),rtl=isRTL();
   const si=STEPS.indexOf(p.status);
-  const exp=tripExp(p),fx=fixedShare(p),prof=tripProfit(p),ps=payState(p);
+  const exp=tripExp(p),prof=tripProfit(p),ps=payState(p);
   const actions=[];
   if(drv){if(p.status==='sent')actions.push(`<button class="btn good" data-act="drv-do" data-type="accept" data-id="${p.id}">${esc(t('act_accept'))}</button><button class="btn ghost" data-act="drv-do" data-type="reject" data-id="${p.id}" style="color:var(--bad)">${esc(t('act_reject'))}</button>`);
     if(p.status==='accepted')actions.push(`<button class="btn amber" data-act="drv-do" data-type="loaded" data-id="${p.id}">${IC.truck}${esc(t('act_loaded'))}</button>`);
@@ -1390,7 +1396,7 @@ V.trip=id=>{const p=byId('trips',id);if(!p)return gone();const drv=isDriver();if
 
   ${can('finance')?`<div class="card sum"><div class="spread"><span>${esc(t('price'))}</span><b>${money(p.price)}</b></div>
    <div class="spread muted"><span>− ${esc(t('var_costs'))}</span><span>${money(exp)}</span></div>
-   <div class="spread muted"><span>− ${esc(t('fixed_share'))}</span><span>${money(fx)}</span></div>
+   
    <div class="spread tot"><span>${esc(t('trip_profit'))}</span><span class="${prof<0?'negv':'pos'}">${money(prof)}</span></div></div>`:''}
 
   ${sec(t('expenses'),p.expenses.length?`<div class="list">${p.expenses.map(e=>`<button class="item" data-act="exp-edit" data-id="${e.id}"><span class="ic">${EXIC[e.type]||IC.coin}</span><span class="t"><b>${esc(t(e.type))}${e.type==='ex_tyre'&&e.action?' · '+esc(t(e.action)):''}</b><span>${fdate(e.date)}${e.liters?` · <span class="num">${nf(e.liters,0)}</span> ${t('liters')}`:''}${e.station?' · '+esc(e.station):''}${e.desc?' · '+esc(e.desc):''}${e.by?' · '+esc(e.by):''}</span></span><span class="e"><b>${money(e.amount)}</b>${e.photo?`<img class="thumb" style="width:34px;height:34px" data-ph="${esc(e.photo)}" alt="">`:''}</span></button>`).join('')}</div>`:emptyBox(),
@@ -1480,10 +1486,10 @@ V.fixed=()=>{const m=ui.month,list=S.fixed.filter(f=>f.month===m);
 V.reports=()=>{const m=ui.month,st=monthStats(m),ps=tripsIn(m),rt=ui.repTab;
   const groups={truck:[DS.trucks,x=>x.plate,(x,p)=>p.truckId===x.id],driver:[DS.drivers,x=>x.name,(x,p)=>p.driverId===x.id],client:[DS.clients,x=>x.name,(x,p)=>p.clientId===x.id],route:[DS.routes,x=>x.from+' - '+x.to,(x,p)=>p.routeId===x.id]};
   const [arr,name,match]=groups[rt];
-  const rows=arr.map(x=>{const q=ps.filter(p=>match(x,p));const rev=sum(q,p=>p.price),ex=sum(q,tripExp)+(rt==='truck'?truckMaint(x.id,m):0),fx=rt==='truck'?truckFixed(x.id,m):sum(q,fixedShare),km=sum(q,tripKm),lit=sum(q,p=>sum(p.expenses.filter(e=>e.type==='ex_diesel'),e=>e.liters||0));
+  const rows=arr.map(x=>{const q=ps.filter(p=>match(x,p));const rev=sum(q,p=>p.price),ex=sum(q,tripExp)+(rt==='truck'?truckMaint(x.id,m):0),fx=rt==='truck'?truckFixed(x.id,m):0,km=sum(q,tripKm),lit=sum(q,p=>sum(p.expenses.filter(e=>e.type==='ex_diesel'),e=>e.liters||0));
     return{n:name(x),trips:q.length,km,rev,ex,fx,net:rev-ex-fx,l100:km?lit/km*100:0,due:rt==='client'?clientBalance(x.id):null}}).filter(r=>r.trips||r.fx);
   ui._rep=rows;
-  const cols=[['n',t(rt==='truck'?'truck':rt==='driver'?'driver':rt==='client'?'client':'route')],['trips',t('trips_count')],['km',t('km_total')],['rev',t('revenue')],['ex',t('var_costs')],['fx',t('fixed_costs')],['net',t('net_profit')]];
+  const cols=[['n',t(rt==='truck'?'truck':rt==='driver'?'driver':rt==='client'?'client':'route')],['trips',t('trips_count')],['km',t('km_total')],['rev',t('revenue')],['ex',t('var_costs')]].concat(rt==='truck'?[['fx',t('fixed_costs')]]:[]).concat([['net',t('net_profit')]]);
   if(rt==='truck')cols.push(['l100',t('l100')]);if(rt==='client')cols.push(['due',t('balance')]);if(rt==='route')cols.push(['avg',t('avg_profit')]);
   rows.forEach(r=>r.avg=r.trips?r.net/r.trips:0);ui._repCols=cols;
   const cell=(r,k)=>k==='n'?esc(r.n):k==='trips'||k==='km'?int(r[k]):k==='l100'?(r.l100?nf(r.l100,1):'—'):`<span class="num ${k==='net'&&r.net<0?'negv':''}">${nf(r[k])}</span>`;
