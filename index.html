@@ -676,6 +676,9 @@ push_denied|التنبيهات مقفلة لهذا التطبيق. افتح إع
 push_done|تم تفعيل التنبيهات ✅|Notifications enabled ✅
 push_fail|ما قدرنا نفعّل التنبيهات، حاول مرة ثانية|Couldn't enable notifications, try again
 push_test|إرسال تنبيه تجريبي|Send test notification
+vat_mode|ضريبة القيمة المضافة|VAT
+vat_with|مع الضريبة ({n}%)|With VAT ({n}%)
+vat_none|بدون ضريبة|Without VAT
 `;
 const T={};
 for(const line of DICT.trim().split('\n')){const p=line.split('|');T[p[0]]=p.slice(1)}
@@ -1126,7 +1129,7 @@ const driverOpts=()=>opt(DS.drivers.filter(x=>x.status==='ds_active'),x=>x.name)
 const keyOpts=keys=>keys.map(k=>[k,t(k)]);
 
 function tripForm(p){if(!guard('trips'))return;const isNew=!p;if(isNew&&!DS.clients.length){toast(t('need_client'),'bad');return clientForm(null)}const prevDriver=p&&p.driverId;
-  openForm({title:t(isNew?'new_trip':'edit_trip'),values:p?{...p}:{loadDate:today(),vat:S.settings.vat},
+  openForm({title:t(isNew?'new_trip':'edit_trip'),values:p?{...p,vatMode:+p.vat===0?'none':'with'}:{loadDate:today(),vat:S.settings.vat,vatMode:'with'},
    intro:isNew?t('send_hint'):'',
    fields:[
     {k:'clientId',l:t('client'),type:'select',opts:opt(DS.clients,c=>c.name),req:true,full:true},
@@ -1136,11 +1139,14 @@ function tripForm(p){if(!guard('trips'))return;const isNew=!p;if(isNew&&!DS.clie
     {k:'unloadLoc',l:t('unload_loc'),type:'loc',hint:t('loc_later')},
     {k:'cargo',l:t('cargo')},{k:'weight',l:t('weight'),type:'number',min:0},
     {k:'loadDate',l:t('load_date'),type:'date',req:true},{k:'price',l:t('price'),type:'number',req:true,min:0},
+    ...(isMgr()?[{k:'vatMode',l:t('vat_mode'),type:'select',empty:false,full:true,opts:[['with',t('vat_with',{n:(p&&+p.vat>0?p.vat:S.settings.vat)})],['none',t('vat_none')]]}]:[]),
     {k:'driverId',l:t('driver'),type:'select',opts:driverOpts(),hint:DS.drivers.length?'':t('no_drivers_hint'),onch:f=>{const d=byId('drivers',f.driverId);if(d&&d.truckId)f.truckId=d.truckId}},
     {k:'truckId',l:t('truck'),type:'select',opts:truckOpts()},
     {k:'bayan',l:t('bayan'),full:true},{k:'notes',l:t('notes'),type:'textarea'}],
    onSave:v=>{if(v.driverId&&!v.truckId)return t('need_truck_driver');
-     if(isNew){const no=++S.seq;const np={id:uid('p'),no,...v,dept:(byId('trucks',v.truckId)||{}).dept||defDept(),vat:+S.settings.vat,status:'new',depart:'',arrive:'',odoStart:'',odoEnd:'',expenses:[],payments:[],confirmed:null,created:today(),events:[],loadDocs:[],cargoPhotos:[],unloadDocs:[]};
+     // VAT: only the manager can record a trip without VAT
+     const vatV=isMgr()?(v.vatMode==='none'?0:(p&&+p.vat>0?+p.vat:+S.settings.vat)):(p?p.vat:+S.settings.vat);delete v.vatMode;v.vat=vatV;
+     if(isNew){const no=++S.seq;const np={id:uid('p'),no,...v,dept:(byId('trucks',v.truckId)||{}).dept||defDept(),vat:vatV,status:'new',depart:'',arrive:'',odoStart:'',odoEnd:'',expenses:[],payments:[],confirmed:null,created:today(),events:[],loadDocs:[],cargoPhotos:[],unloadDocs:[]};
        addEv(np,'created');if(np.driverId){np.status='sent';addEv(np,'sent',{n:driverName(np.driverId)})}
        S.trips.push(np);log(`+ ${t('trip')} ${no}`);ui.stack=[{type:'trip',id:np.id}];ui.tab='trips'}
      else{Object.assign(p,v);{const tk=byId('trucks',p.truckId);if(tk&&tk.dept)p.dept=tk.dept}if(v.driverId&&v.driverId!==prevDriver&&['new','sent','accepted'].includes(p.status)){p.status='sent';p.lastReject='';addEv(p,'sent',{n:driverName(v.driverId)})}
