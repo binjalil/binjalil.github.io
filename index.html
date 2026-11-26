@@ -679,6 +679,15 @@ push_test|إرسال تنبيه تجريبي|Send test notification
 vat_mode|ضريبة القيمة المضافة|VAT
 vat_with|مع الضريبة ({n}%)|With VAT ({n}%)
 vat_none|بدون ضريبة|Without VAT
+truck_report|تقرير الشاحنة|Truck report
+rep_trips_of|رحلات|Trips of
+rep_plate|لوحة الشاحنة|Truck plate
+rep_no|رقم|No.
+rep_rev|الايراد|Revenue
+rep_exp|مصروف الرحلات|Trip expenses
+rep_net|الصافي|Net
+rep_text|نص التقرير (تقدر تعدّل عليه)|Report text (editable)
+share|مشاركة|Share
 `;
 const T={};
 for(const line of DICT.trim().split('\n')){const p=line.split('|');T[p[0]]=p.slice(1)}
@@ -1094,7 +1103,7 @@ function fieldHTML(f){const v=ui.form[f.k]??'',err=ui.errs[f.k]?' err':'',lab=`<
   if(f.type==='select')return`<label class="fld${err}${f.full?' full':''}" for="${id}">${lab}<select id="${id}" data-fk="${f.k}">${f.empty!==false?`<option value="">—</option>`:''}${f.opts.map(([a,b])=>`<option value="${esc(a)}" ${String(v)===String(a)?'selected':''}>${esc(b)}</option>`).join('')}</select>${f.hint?`<span class="hint">${esc(f.hint)}</span>`:''}</label>`;
   if(f.type==='loc')return`<div class="fld full${err}">${lab}<input id="${id}" type="url" inputmode="url" dir="ltr" value="${esc(v)}" data-fk="${f.k}" autocomplete="off" placeholder="${esc(t('loc_ph'))}">
     <div class="row"><button type="button" class="btn sm" data-act="loc-pick" data-type="${f.k}">${IC.pin}${esc(t('loc_pick'))}</button><button type="button" class="btn sec sm" data-act="loc-here" data-type="${f.k}">${esc(t('loc_here'))}</button>${normLoc(v)?locBtn(normLoc(v),t('open_map')):''}</div>${f.hint?`<span class="hint">${esc(f.hint)}</span>`:''}</div>`;
-  if(f.type==='textarea')return`<label class="fld full${err}" for="${id}">${lab}<textarea id="${id}" data-fk="${f.k}">${esc(v)}</textarea></label>`;
+  if(f.type==='textarea')return`<label class="fld full${err}" for="${id}">${lab}<textarea id="${id}" data-fk="${f.k}"${f.rows?` rows="${f.rows}" style="min-height:${f.rows*1.7}em"`:''}>${esc(v)}</textarea></label>`;
   if(f.type==='photos'){const arr=Array.isArray(v)?v:[];return`<div class="fld full${err}">${lab}<div class="thumbs">${arr.map(id=>`<span class="ph"><img class="thumb" data-ph="${esc(id)}" alt=""><button type="button" class="phx" data-act="ph-del" data-type="${f.k}" data-id="${esc(id)}" aria-label="${esc(t('delete'))}">×</button></span>`).join('')}<label class="thumb addph" role="button">${IC.plus}<input type="file" accept="image/*" multiple data-photos="${f.k}" hidden></label></div></div>`}
   if(f.type==='photo')return`<div class="fld full">${lab}<div class="photo-in">${v?`<img data-ph="${esc(v)}" alt="">`:''}<label class="btn sec sm">${IC.upload}${esc(v?t('change_photo'):t('add_photo'))}<input type="file" accept="image/*" data-photo="${f.k}" hidden></label></div></div>`;
   const ty=f.type==='number'?'text':(f.type||'text'),im=f.type==='number'?' inputmode="decimal" dir="ltr"':f.type==='tel'?' inputmode="tel" dir="ltr"':f.type==='pin'?' inputmode="numeric" maxlength="4" dir="ltr"':'';
@@ -1263,6 +1272,15 @@ function settingsForm(){if(!guard('*'))return;
     {k:'vat',l:t('vat_pct'),type:'number',min:0},{k:'dieselPrice',l:t('diesel_price'),type:'number',min:0},{k:'alertDays',l:t('alert_days'),type:'number',min:1}],
    onSave:v=>{Object.assign(S.settings,v)}})}
 
+
+/* per-truck report as plain text, ready to share on WhatsApp */
+function truckReportText(id,m){const x=byId('trucks',id),ps=tripsIn(m,p=>p.truckId===id).sort((a,b)=>a.no-b.no);
+  const n=v=>String(Math.round(v*100)/100);const drv=[...new Set(ps.map(p=>p.driverId&&driverName(p.driverId)).filter(Boolean))];
+  const rev=sum(ps,p=>+p.price||0),ex=sum(ps,tripExp);
+  return `${t('rep_trips_of')} ${drv.join(' و ')||'—'} - ${t('rep_plate')} ${x.plate}\n${t('rep_no')} ${ps.map(p=>p.no).join(' - ')}\n\n${t('rep_rev')} ${n(rev)}\n${t('rep_exp')} ${n(ex)}\n\n${t('rep_net')}\n${n(rev-ex)}`}
+function truckReport(){const id=cur().id;const txt=truckReportText(id,ui.month);
+  openForm({title:t('truck_report')+' · '+fmonth(ui.month),values:{txt},noFocus:true,fields:[{k:'txt',l:t('rep_text'),type:'textarea',full:true,rows:8}],ok:t('share'),
+    onSave:v=>{const s=v.txt||txt;if(navigator.share){navigator.share({text:s}).catch(()=>{})}else{window.open('https://wa.me/?text='+encodeURIComponent(s),'_blank')}}})}
 /* ---------- trip status actions ---------- */
 function tripAction(p,act){
   if(act==='delete'&&!isMgr())return toast(t('not_allowed'),'bad');
@@ -1476,6 +1494,7 @@ V.truck=id=>{const x=byId('trucks',id);if(!x)return gone();const m=ui.month,ps=t
   <div class="kpis"><div class="kpi"><div class="l">${esc(t('trips_count'))}</div><div class="v">${int(ps.length)}</div></div>${can('finance')?`<div class="kpi"><div class="l">${esc(t('net_profit'))}</div><div class="v ${rev-ex-fx<0?'negv':''}">${int(rev-ex-fx)} <small>${t('sar')}</small></div></div>
    <div class="kpi"><div class="l">${esc(t('revenue'))}</div><div class="v">${int(rev)} <small>${t('sar')}</small></div></div><div class="kpi"><div class="l">${esc(t('var_costs'))}</div><div class="v">${int(ex)} <small>${t('sar')}</small></div></div>
    <div class="kpi"><div class="l">${esc(t('fixed_costs'))}</div><div class="v">${int(fx)} <small>${t('sar')}</small></div></div>`:''}<div class="kpi"><div class="l">${esc(t('l100'))}</div><div class="v">${km?nf(lit/km*100,1):'—'}</div></div></div>
+   ${can('finance')&&ps.length?`<button class="btn sec" data-act="truck-report">📋 ${esc(t('truck_report'))}</button>`:''}
   ${sec(t('documents'),`<div class="card"><dl class="kv">${['istimara','insurance','inspection','opcard'].map(docRow).join('')}</dl></div>`)}
   ${sec(t('general_info'),`<div class="card stack"><dl class="kv"><dt>${esc(t('trailer'))}</dt><dd>${esc(t(x.trailer))}</dd><dt>${esc(t('capacity'))}</dt><dd class="num">${esc(x.cap||'—')}</dd><dt>${esc(t('odometer'))}</dt><dd>${int(tOdo(x))}</dd>
    <dt>${esc(t('service_every'))}</dt><dd>${int(x.serviceEvery||0)} · ${esc(t('last_service'))} ${int(x.lastService||0)}</dd><dt>${esc(t('ownership'))}</dt><dd>${esc(t(x.own))}${x.own==='own_loan'?' · '+money(x.installment):''}</dd><dt>${esc(t('ins_annual'))}</dt><dd>${money(x.insAnnual)}</dd>
@@ -1587,6 +1606,7 @@ function csv(name,head,rows){downloadText(name,'﻿'+[head,...rows].map(r=>r.map
 
 /* ---------- actions ---------- */
 const ACT={
+ 'truck-report':()=>truckReport(),
  'push-on':()=>pushEnable(),
  'go':id=>go(id),'pop':()=>pop(),'push':(id,el)=>push(el.dataset.type,el.dataset.id),
  'open':(id,el)=>{if(el.dataset.type==='client'&&ui.tab!=='clients'&&!ui.stack.length)ui.tab='clients';push(el.dataset.type,id)},
