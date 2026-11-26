@@ -1027,7 +1027,7 @@ function alerts(){const out=[],T0=today(),lim=+S.settings.alertDays||30;
   const docTxt=d=>{const n=daysBetween(T0,d);return n<0?t('expired'):t('expires_in',{n})};
   for(const trk of DS.trucks){if(trk.status==='ts_stopped')continue;
     for(const k of ['istimara','insurance','inspection','opcard']){const d=trk.docs&&trk.docs[k];if(d&&daysBetween(T0,d)<=lim)out.push({lvl:daysBetween(T0,d)<0?'bad':'warn',txt:t('al_doc',{doc:t(k),p:trk.plate,d:docTxt(d)}),go:['truck',trk.id],sort:daysBetween(T0,d)})}
-    if(+trk.serviceEvery&&(+trk.odo-(+trk.lastService||0))>=+trk.serviceEvery-500)out.push({lvl:'warn',txt:t('al_service',{p:trk.plate}),go:['truck',trk.id],sort:5})}
+    if(+trk.serviceEvery&&(tOdo(trk)-(+trk.lastService||0))>=+trk.serviceEvery-500)out.push({lvl:'warn',txt:t('al_service',{p:trk.plate}),go:['truck',trk.id],sort:5})}
   for(const d of DS.drivers){if(d.status==='ds_left')continue;for(const[k,f]of[['id_exp','idExp'],['lic_exp','licExp']]){const x=d[f];if(x&&daysBetween(T0,x)<=lim)out.push({lvl:daysBetween(T0,x)<0?'bad':'warn',txt:t('al_driver',{doc:t(k),n:d.name,d:docTxt(x)}),go:['driver',d.id],sort:daysBetween(T0,x)})}}
   for(const c of DS.clients){const late=DS.trips.filter(p=>p.clientId===c.id&&p.status==='delivered'&&tripDue(p)>.01&&dueDateOf(p)<T0);if(late.length)out.push({lvl:'bad',txt:t('al_overdue',{c:c.name,a:moneyT(sum(late,tripDue))}),go:['client',c.id],sort:-50});
     if(+c.limit&&clientBalance(c.id)>+c.limit)out.push({lvl:'bad',txt:t('al_limit',{c:c.name}),go:['client',c.id],sort:-40})}
@@ -1054,6 +1054,9 @@ const plateOf=id=>{const x=byId('trucks',id);return x?x.plate:'—'};
 const driverName=id=>{const x=byId('drivers',id);return x?x.name:'—'};
 const EXIC={ex_diesel:IC.fuel,ex_driver:IC.person,ex_maint:IC.wrench,ex_tyre:IC.tyre,ex_other:IC.coin};
 const TRUCK_ST={ts_available:'good',ts_trip:'amber',ts_maint:'warn',ts_stopped:'bad'};
+// truck status & odometer are worked out from the trips too, because a driver's phone can't save truck changes
+const tStatus=x=>{if(x.status==='ts_stopped'||x.status==='ts_maint')return x.status;return S.trips.some(p=>p.truckId===x.id&&p.status==='onroad')?'ts_trip':'ts_available'};
+const tOdo=x=>Math.max(+x.odo||0,...S.trips.filter(p=>p.truckId===x.id).map(p=>Math.max(+p.odoEnd||0,+p.odoStart||0,...(p.expenses||[]).map(e=>+e.odo||0))));
 
 /* ---------- form sheet ---------- */
 /* field: {k,l,type,opts:[[v,label]],req,full,show(f),onch(f),hint,min,step} */
@@ -1196,7 +1199,7 @@ function truckForm(x){if(!guard('fleet'))return;const isNew=!x;
 
 function accBox(a,type){return`<div class="note spread"><span>${esc(t('login_state'))}: ${pill(accState(a),accState(a)==='acc_active'?'good':'warn')}</span><button class="btn ghost sm" data-act="acc-reset" data-type="${type}" data-id="${a.id}">${esc(t('reset_login'))}</button></div>`}
 function maintForm(trk,x){if(!can('fleet')&&!can('expenses'))return toast(t('not_allowed'),'bad');const isNew=!x;
-  openForm({title:isNew?t('maint_new')+' · '+trk.plate:t(x.type),values:x?{...x}:{part:'head',type:'mt_service',date:today(),odo:trk.odo},del:!isNew&&(isMgr()||can('fleet')),
+  openForm({title:isNew?t('maint_new')+' · '+trk.plate:t(x.type),values:x?{...x}:{part:'head',type:'mt_service',date:today(),odo:tOdo(trk)},del:!isNew&&(isMgr()||can('fleet')),
    fields:[{k:'part',l:t('maint_part'),type:'select',opts:[['head',t('head')],['trailer',t('trailer_part')]],empty:false},{k:'type',l:t('ex_type'),type:'select',opts:MT_TYPES.map(k=>[k,t(k)]),empty:false},
     {k:'date',l:t('date'),type:'date',req:true},{k:'cost',l:t('amount'),type:'number',req:true,min:0},{k:'odo',l:t('odometer'),type:'number',min:0},{k:'workshop',l:t('workshop')},
     {k:'note',l:t('notes'),type:'textarea',full:true},{k:'photos',l:t('invoice_photo'),type:'photos',full:true}],
@@ -1278,7 +1281,7 @@ function driverAction(p,act){const drv=isDriver();if(drv&&p.driverId!==SES.id)re
   if(act==='accept'){ui.confirm={msg:t('act_accept')+' · #'+p.no,sub:`${p.from} ${arrow()} ${p.to}`,ok:t('act_accept'),kind:'good',fn:()=>{p.status='accepted';addEv(p,'accepted');log(`${t('ev_accepted')} · ${t('trip')} ${p.no}`)}};render();return}
   if(act==='reject'){openForm({title:t('act_reject')+' · #'+p.no,values:{},fields:[{k:'r',l:t('reject_reason'),type:'textarea',req:true}],okKind:'bad',ok:t('act_reject'),
      onSave:v=>{addEv(p,'rejected',{r:v.r});p.lastReject=v.r;p.status='new';p.rejBy=p.driverId;p.driverId='';log(`${t('ev_rejected',{r:v.r})} · ${t('trip')} ${p.no}`)}});return}
-  if(act==='loaded'){openForm({title:t('act_loaded')+' · #'+p.no,values:{loadDocs:[],cargoPhotos:[],odoStart:trk?trk.odo:''},noFocus:true,
+  if(act==='loaded'){openForm({title:t('act_loaded')+' · #'+p.no,values:{loadDocs:[],cargoPhotos:[],odoStart:trk?tOdo(trk):''},noFocus:true,
      fields:[{k:'loadDocs',l:t('docs_photos'),type:'photos',req:drv},{k:'cargoPhotos',l:t('cargo_photos'),type:'photos',req:drv},{k:'odoStart',l:t('odo_start'),type:'number',min:0}],
      onSave:v=>{Object.assign(p,{loadDocs:[...(p.loadDocs||[]),...v.loadDocs],cargoPhotos:[...(p.cargoPhotos||[]),...v.cargoPhotos],odoStart:v.odoStart,depart:nowISO(),status:'onroad'});if(trk)trk.status='ts_trip';addEv(p,'loaded');log(`${t('ev_loaded')} · ${t('trip')} ${p.no}`)}});return}
   if(act==='unloaded'){const rt=byId('routes',p.routeId);
@@ -1459,7 +1462,7 @@ V.invoice=id=>{const p=byId('trips',id),c=byId('clients',p.clientId)||{},s=S.set
   </div><button class="btn noprint" data-act="print">${IC.printer}${esc(t('print'))}</button></main>`};
 
 V.fleet=()=>{const ft=ui.fleetTab;let body='',add='';
-  if(ft==='trucks'){body=DS.trucks.length?`<div class="list">${DS.trucks.map(x=>{const n=tripsIn(curMonth(),p=>p.truckId===x.id).length;return`<button class="item" data-act="open" data-type="truck" data-id="${x.id}"><span class="ic">${IC.truck}</span><span class="t"><b>${esc(x.plate)}</b><span>${esc(x.make)} ${esc(x.model)} · ${esc(t(x.trailer))} · <span class="num">${nf(x.odo,0)}</span> ${t('km')}</span></span><span class="e">${pill(x.status,TRUCK_ST[x.status])}<span class="xs muted">${esc(t('n_trips',{n}))}</span></span></button>`}).join('')}</div>`:emptyBox();add='truck-new'}
+  if(ft==='trucks'){body=DS.trucks.length?`<div class="list">${DS.trucks.map(x=>{const n=tripsIn(curMonth(),p=>p.truckId===x.id).length;return`<button class="item" data-act="open" data-type="truck" data-id="${x.id}"><span class="ic">${IC.truck}</span><span class="t"><b>${esc(x.plate)}</b><span>${esc(x.make)} ${esc(x.model)} · ${esc(t(x.trailer))} · <span class="num">${nf(tOdo(x),0)}</span> ${t('km')}</span></span><span class="e">${pill(tStatus(x),TRUCK_ST[tStatus(x)])}<span class="xs muted">${esc(t('n_trips',{n}))}</span></span></button>`}).join('')}</div>`:emptyBox();add='truck-new'}
   if(ft==='drivers'){body=DS.drivers.length?`<div class="list">${DS.drivers.map(d=>`<button class="item" data-act="open" data-type="driver" data-id="${d.id}"><span class="ic">${IC.person}</span><span class="t"><b>${esc(d.name)}</b><span>${esc(plateOf(d.truckId))} · <span class="num">${esc(d.phone||'')}</span></span></span><span class="e">${pill(d.status,d.status==='ds_active'?'good':d.status==='ds_leave'?'warn':'')}</span></button>`).join('')}</div>`:emptyBox();add='driver-new'}
   if(ft==='tyres'){body=DS.trucks.map(x=>{const ty=S.tyres.filter(y=>y.truckId===x.id);return ty.length?`<h3 class="muted">${esc(x.plate)}</h3><div class="list">${ty.map(y=>`<button class="item" data-act="tyre-edit" data-id="${y.id}"><span class="ic">${IC.tyre}</span><span class="t"><b>${esc(y.pos)}</b><span>${esc(y.brand||'')} ${esc(y.size||'')} · ${esc(t('tyre_km'))}: <span class="num">${nf(Math.max(0,(+x.odo)-(+y.odo||0)),0)}</span> ${t('km')}</span></span><span class="e">${pill(y.status,y.status==='ty_ok'?'good':y.status==='ty_repaired'?'warn':'bad')}</span></button>`).join('')}</div>`:''}).join('')||emptyBox();add='tyre-new'}
   return bar(t('fleet'))+`<main class="stack"><div class="seg">${[['trucks','trucks'],['drivers','drivers'],['tyres','tyres']].map(([k,l])=>`<button data-act="fleet-tab" data-id="${k}" aria-pressed="${ft===k}">${esc(t(l))}</button>`).join('')}</div>${body}</main>
@@ -1469,12 +1472,12 @@ V.truck=id=>{const x=byId('trucks',id);if(!x)return gone();const m=ui.month,ps=t
   const mt=truckMaint(id,m),rev=sum(ps,p=>p.price),ex=sum(ps,tripExp)+mt,fx=truckFixed(id,m),km=sum(ps,tripKm),lit=sum(ps,p=>sum(p.expenses.filter(e=>e.type==='ex_diesel'),e=>e.liters||0));
   const docRow=k=>{const d=x.docs&&x.docs[k];const n=d?daysBetween(T0,d):null;return`<dt>${esc(t(k))}</dt><dd>${d?fdate(d):'—'} ${n!==null&&n<=(+S.settings.alertDays||30)?pill(n<0?'expired':'expiry',n<0?'bad':'warn'):''}</dd>`};
   return bar(x.plate,[x.make,x.model,x.year].filter(Boolean).join(' '),can('fleet')?`<button class="iconbtn" data-act="truck-edit" aria-label="${esc(t('edit'))}">${IC.wrench}</button>`:'')+`<main class="stack">
-  <div class="row"><input type="month" class="search" style="max-width:200px" value="${m}" data-ch="month" aria-label="${esc(t('month'))}">${pill(x.status,TRUCK_ST[x.status])}</div>
+  <div class="row"><input type="month" class="search" style="max-width:200px" value="${m}" data-ch="month" aria-label="${esc(t('month'))}">${pill(tStatus(x),TRUCK_ST[tStatus(x)])}</div>
   <div class="kpis"><div class="kpi"><div class="l">${esc(t('trips_count'))}</div><div class="v">${int(ps.length)}</div></div>${can('finance')?`<div class="kpi"><div class="l">${esc(t('net_profit'))}</div><div class="v ${rev-ex-fx<0?'negv':''}">${int(rev-ex-fx)} <small>${t('sar')}</small></div></div>
    <div class="kpi"><div class="l">${esc(t('revenue'))}</div><div class="v">${int(rev)} <small>${t('sar')}</small></div></div><div class="kpi"><div class="l">${esc(t('var_costs'))}</div><div class="v">${int(ex)} <small>${t('sar')}</small></div></div>
    <div class="kpi"><div class="l">${esc(t('fixed_costs'))}</div><div class="v">${int(fx)} <small>${t('sar')}</small></div></div>`:''}<div class="kpi"><div class="l">${esc(t('l100'))}</div><div class="v">${km?nf(lit/km*100,1):'—'}</div></div></div>
   ${sec(t('documents'),`<div class="card"><dl class="kv">${['istimara','insurance','inspection','opcard'].map(docRow).join('')}</dl></div>`)}
-  ${sec(t('general_info'),`<div class="card stack"><dl class="kv"><dt>${esc(t('trailer'))}</dt><dd>${esc(t(x.trailer))}</dd><dt>${esc(t('capacity'))}</dt><dd class="num">${esc(x.cap||'—')}</dd><dt>${esc(t('odometer'))}</dt><dd>${int(x.odo)}</dd>
+  ${sec(t('general_info'),`<div class="card stack"><dl class="kv"><dt>${esc(t('trailer'))}</dt><dd>${esc(t(x.trailer))}</dd><dt>${esc(t('capacity'))}</dt><dd class="num">${esc(x.cap||'—')}</dd><dt>${esc(t('odometer'))}</dt><dd>${int(tOdo(x))}</dd>
    <dt>${esc(t('service_every'))}</dt><dd>${int(x.serviceEvery||0)} · ${esc(t('last_service'))} ${int(x.lastService||0)}</dd><dt>${esc(t('ownership'))}</dt><dd>${esc(t(x.own))}${x.own==='own_loan'?' · '+money(x.installment):''}</dd><dt>${esc(t('ins_annual'))}</dt><dd>${money(x.insAnnual)}</dd>
    <dt>${esc(t('drivers'))}</dt><dd>${esc(truckDrivers(id).map(d=>d.name).join('، ')||'—')}</dd></dl>${can('fleet')?`<button class="btn sec sm" data-act="truck-service">${IC.wrench}${esc(t('record_service'))}</button>`:''}</div>`)}
   ${(()=>{const ms=(S.maint||[]).filter(y=>y.truckId===id).sort((a,b)=>a.date<b.date?1:-1),inM=ms.filter(y=>monthOf(y.date)===m);
@@ -1656,7 +1659,7 @@ const ACT={
  'print':()=>window.print(),
  'fleet-tab':id=>{ui.fleetTab=id;render()},'client-tab':id=>{ui.clientTab=id;render()},'rep-tab':id=>{ui.repTab=id;render()},
  'truck-new':()=>truckForm(null),'truck-edit':()=>truckForm(byId('trucks',cur().id)),
- 'truck-service':()=>{if(!guard('fleet'))return;const x=byId('trucks',cur().id);ui.confirm={msg:t('record_service')+' · '+x.plate,sub:t('odometer')+': '+nf(x.odo,0),ok:t('save'),kind:'',fn:()=>{x.lastService=+x.odo;log(`${t('record_service')} ${x.plate}`)}};render()},
+ 'truck-service':()=>{if(!guard('fleet'))return;const x=byId('trucks',cur().id);ui.confirm={msg:t('record_service')+' · '+x.plate,sub:t('odometer')+': '+nf(tOdo(x),0),ok:t('save'),kind:'',fn:()=>{x.odo=tOdo(x);x.lastService=+x.odo;log(`${t('record_service')} ${x.plate}`)}};render()},
  'driver-new':()=>driverForm(null),
  'drivers-add':()=>{ui.tab='fleet';ui.fleetTab='drivers';ui.stack=[];render();driverForm(null)},'driver-edit':()=>driverForm(byId('drivers',cur().id)),
  'custody-new':()=>custodyForm(byId('drivers',cur().id)),
